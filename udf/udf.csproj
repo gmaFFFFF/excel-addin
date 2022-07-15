@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AssemblyName>gmafffff.excel.udf</AssemblyName>
+        <RootNamespace>gmafffff.excel.udf</RootNamespace>
+        <PackageId>gmafffff.excel.udf</PackageId>
+        <Title>Пользовательские функции Excel</Title>
+        <Authors>Maksim Grishkin</Authors>
+        <Company>gmaFFFFF</Company>
+        <Product>excel-addin</Product>
+    </PropertyGroup>
+
+</Project>

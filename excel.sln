@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "udf", "udf\udf.csproj", "{A404B31F-1530-4257-B541-0D627404F1F3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "udf.tests", "udf.tests\udf.tests.csproj", "{230D7448-D6E6-43F8-B827-CF34AFBEA971}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A404B31F-1530-4257-B541-0D627404F1F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A404B31F-1530-4257-B541-0D627404F1F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A404B31F-1530-4257-B541-0D627404F1F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A404B31F-1530-4257-B541-0D627404F1F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{230D7448-D6E6-43F8-B827-CF34AFBEA971}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{230D7448-D6E6-43F8-B827-CF34AFBEA971}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{230D7448-D6E6-43F8-B827-CF34AFBEA971}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{230D7448-D6E6-43F8-B827-CF34AFBEA971}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
