@@ -13,4 +13,8 @@
         <Product>excel-addin</Product>
     </PropertyGroup>
 
+    <ItemGroup>
+        <PackageReference Include="DecimalMath.DecimalEx" Version="1.0.2"/>
+    </ItemGroup>
+
 </Project>
