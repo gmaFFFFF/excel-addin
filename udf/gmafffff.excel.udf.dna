@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+      Атрибут RuntimeVersion допускает только:
+      * RuntimeVersion="v4.0" — для .NET 4.5 или выше
+
+      Автозаполнение (IntelliSense) и проверка xsd схемы доступны через:
+      https://github.com/Excel-DNA/ExcelDna/tree/master/Distribution/XmlSchemas/
+-->
+
+<DnaLibrary Name="gmafffff Excel Add-In"
+            RuntimeVersion="v4.0"
+            xmlns="http://schemas.excel-dna.net/addin/2020/07/dnalibrary"
+>
+    <ExternalLibrary Path="gmafffff.excel.udf.dll"
+                     ExplicitExports="true"
+                     ExplicitRegistration="true"
+                     LoadFromBytes="true" Pack="true"
+                     IncludePdb="false"/>
+    <!-- 
+        Ссылки на зависимости проекта можно указать, добавив элементы «Reference».
+        Такие библиотеки не будут регистрироваться в Excel как надстройки,
+        но будут упакованы в файл -packed.xll и загружены во время выполнения (по мере необходимости)
+        
+        Например:
+        <Reference Path="Another.Library.dll" Pack="true" />
+    -->
+    <Reference Path="DecimalEx.dll" Pack="true"/>
+    <Reference Path="ExcelDna.Registration.dll" Pack="true"/>
+
+    <!--
+        Excel-DNA также позволяет указать XML для расширений пользовательского интерфейса ленты в файле .dna.
+        См. сайт Excel-DNA по адресу https://excel-dna.net для загрузки полного дистрибутива.
+    -->
+</DnaLibrary>

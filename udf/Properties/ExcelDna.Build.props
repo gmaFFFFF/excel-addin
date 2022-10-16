@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="ExcelDnaProps">
+    <!--
+      Если Вы изменяется настройки в этом файле, то они не будут применяться пока Вы не сделаете:
+         * Перестройте (Rebuild) решение(solution)/проект
+         или
+         * Закройте Visual Studio
+         * Удалите (если существует) папку .vs 
+         * Удалите (если существует) файл <название проекта>.csproj.user (или эквивалент VB, F# и т.д.)
+         * Удалите (если существует) файл SolutionName.suo
+         * Откройте заново Ваше решение(solution)/проект в Visual Studio
+      -->
+
+    <!--
+      Настройки конфигурации отладкии Excel-DNA add-ins
+    -->
+    <PropertyGroup>
+        <!--
+          Активировать/деактивировать возможность отладки
+          Включить/отключить настройку параметров отладки при сборке проекта
+        -->
+        <RunExcelDnaSetDebuggerOptions Condition="'$(RunExcelDnaSetDebuggerOptions)' == ''">true</RunExcelDnaSetDebuggerOptions>
+
+        <!--
+          Переопределите путь к EXCEL.EXE, используемый для отладки проекта (при необходимости)
+          По умолчанию будет использоваться последняя версия Excel, которую можно найти на компьютере          
+        -->
+        <ExcelDnaExcelExePath Condition="'$(ExcelDnaExcelExePath)' == ''"/>
+
+        <!--
+          Переопределите имя надстройки .XLL для использования при отладке проекта  (при необходимости)
+          По умолчанию будет использоваться первая не упакованная надстройка .xll, которая соответствует разрядности EXCEL.EXE
+        -->
+        <ExcelDnaAddInForDebugging Condition="'$(ExcelDnaAddInForDebugging)' == ''"/>
+    </PropertyGroup>
+
+    <!--
+      Свойства конфигурации для создания файлов .dna
+    -->
+    <PropertyGroup>
+        <!--
+          Включить/отключить автоматическое создание файлов .dna для конкретной платформы.
+        -->
+        <ExcelDnaCreate32BitAddIn Condition="'$(ExcelDnaCreate32BitAddIn)' == ''">true</ExcelDnaCreate32BitAddIn>
+        <ExcelDnaCreate64BitAddIn Condition="'$(ExcelDnaCreate64BitAddIn)' == ''">true</ExcelDnaCreate64BitAddIn>
+
+        <!--
+          Define the suffix used for each platform-specific file e.g. MyAddIn64.dna
+          Определите суффикс, используемый для .dna файла конкретной платформы, например, МойAddIn64.dna
+        -->
+        <ExcelDna32BitAddInSuffix Condition="'$(ExcelDna32BitAddInSuffix)' == ''">_x32</ExcelDna32BitAddInSuffix>
+        <ExcelDna64BitAddInSuffix Condition="'$(ExcelDna64BitAddInSuffix)' == ''">_x64</ExcelDna64BitAddInSuffix>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <!--
+          Включить/отключить использование Excel-DNA с проектами PackageReference (официально не поддерживается)
+        -->
+        <ExcelDnaAllowPackageReferenceProjectStyle Condition="'$(ExcelDnaAllowPackageReferenceProjectStyle)' == ''">false</ExcelDnaAllowPackageReferenceProjectStyle>
+    </PropertyGroup>
+
+    <!--
+      Свойства конфигурации для упаковки файлов .dna
+    -->
+    <PropertyGroup>
+        <!--
+          Включить/отключить упаковку файлов .dna
+        -->
+        <RunExcelDnaPack Condition="'$(RunExcelDnaPack)' == ''">true</RunExcelDnaPack>
+
+        <!--
+          Суффикс, используемый для упакованных файлов .xll, например, МойAddIn-packed.xll
+        -->
+        <ExcelDnaPackXllSuffix Condition="'$(ExcelDnaPackXllSuffix)' == ''">-packed</ExcelDnaPackXllSuffix>
+    </PropertyGroup>
+</Project>

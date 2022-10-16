@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net6.0-windows</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AssemblyName>gmafffff.excel.udf</AssemblyName>
@@ -10,11 +10,19 @@
         <Title>Пользовательские функции Excel</Title>
         <Authors>Maksim Grishkin</Authors>
         <Company>gmaFFFFF</Company>
-        <Product>excel-addin</Product>
+        <Product>gmaFFFFF-excel-addin</Product>
+        <NeutralLanguage>ru-RU</NeutralLanguage>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="DecimalMath.DecimalEx" Version="1.0.2"/>
+        <PackageReference Include="ExcelDna.AddIn" Version="1.6.0"/>
+        <PackageReference Include="ExcelDna.Registration" Version="1.6.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="Properties\ExcelDna.Build.props"/>
+        <None Include="gmafffff.excel.udf.dna"/>
     </ItemGroup>
 
 </Project>
