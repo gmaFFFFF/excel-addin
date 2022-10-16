@@ -1,4 +1,5 @@
 using ExcelDna.Integration;
+using ExcelDna.Registration;
 
 namespace gmafffff.excel.udf.AddIn;
 
@@ -33,4 +34,76 @@ public static class Функции {
             (< 0, var степень) => Math.Round(число / степень, 0, MidpointRounding.ToEven) * степень
         };
     }
+
+    #region Http
+
+    [ExcelAsyncFunction(Name = "HttpGet", Category = МояКатегория,
+        Description = @$"Выполняет Get запрос по адресу и возвращает json объект с полями:
+{nameof(HttpКлиент.HttpКлиент.ОтветHttp.ДатаЗапроса)}; {nameof(HttpКлиент.HttpКлиент.ОтветHttp.Статус)}; {nameof(HttpКлиент.HttpКлиент.ОтветHttp.Содержимое)}; {nameof(HttpКлиент.HttpКлиент.ОтветHttp.Заголовки)} — заголовк ответа; {nameof(HttpКлиент.HttpКлиент.ОтветHttp.Заголовки2)} — заголовк содержимого; {nameof(HttpКлиент.HttpКлиент.ОтветHttp.Куки)} — куки.
+Не забывайте про ограничения по количеству символов в ячейке")]
+    public static async Task<object> HttpGet(
+        [ExcelArgument(Name = "адрес", Description = "Url адрес, по которому необходимо сделать запрос")]
+        string адрес,
+        [ExcelArgument(Name = "jsonPath", Description =
+            @"Задаётся в формате JSONPath и позволяет сразу перейти к нужному элементу Json.
+Подробнее о формате JSONPath по ссылке:
+https://danielaparker.github.io/JsonCons.Net/articles/JsonPath/JsonConsJsonPath.html")]
+        string jsonPath = "$",
+        [ExcelArgument(Name = "заголовки", Description =
+            "Диапазон: столбец с названиями и столбцы со значениями заголовка запроса (необязательно)")]
+        string[,]? заголовки = null,
+        CancellationToken ct = default) {
+        // Предотвращает выполнение пока запущен мастер функций
+        if (ExcelDnaUtil.IsInFunctionWizard()) return "";
+
+        if (заголовки?.Length == 1)
+            заголовки = null;
+
+        var ответ = await HttpКлиент.HttpКлиент.GetАсинх(адрес, заголовки, ct).ConfigureAwait(false);
+
+        if (ответ is null)
+            return ExcelError.ExcelErrorNA;
+
+        if (string.IsNullOrWhiteSpace(jsonPath) || jsonPath == "$")
+            return ответ;
+
+        return JsonКлиент.JsonКлиент.JsonPathНайди(ответ, jsonPath);
+    }
+
+    [ExcelAsyncFunction(Name = "HttpPost", Category = МояКатегория,
+        Description = $@"Выполняет Post запрос по адресу и возвращает json объект с полями:
+{nameof(HttpКлиент.HttpКлиент.ОтветHttp.ДатаЗапроса)}; {nameof(HttpКлиент.HttpКлиент.ОтветHttp.Статус)}; {nameof(HttpКлиент.HttpКлиент.ОтветHttp.Содержимое)}; {nameof(HttpКлиент.HttpКлиент.ОтветHttp.Заголовки)} — заголовк ответа; {nameof(HttpКлиент.HttpКлиент.ОтветHttp.Заголовки2)} — заголовк содержимого; {nameof(HttpКлиент.HttpКлиент.ОтветHttp.Куки)} — куки
+Не забывайте про ограничения по количеству символов в ячейке")]
+    public static async Task<object> HttpPost(
+        [ExcelArgument(Name = "адрес", Description = "Url адрес, по которому необходимо сделать запрос")]
+        string адрес,
+        [ExcelArgument(Name = "jsonPath", Description =
+            @"Задаётся в формате JSONPath и позволяет сразу перейти к нужному элементу Json.
+Подробнее о формате JSONPath по ссылке:
+https://danielaparker.github.io/JsonCons.Net/articles/JsonPath/JsonConsJsonPath.html")]
+        string jsonPath = "$",
+        [ExcelArgument(Name = "заголовки", Description =
+            "Диапазон: столбец с названиями и столбцы со значениями заголовка запроса (необязательно)")]
+        string[,]? заголовки = null,
+        [ExcelArgument(Name = "тело", Description = "Тело запроса в формате json")]
+        string? телоJson = null,
+        CancellationToken ct = default) {
+        // Предотвращает выполнение пока запущен мастер функций
+        if (ExcelDnaUtil.IsInFunctionWizard()) return "";
+
+        if (заголовки?.Length == 1)
+            заголовки = null;
+
+        var ответ = await HttpКлиент.HttpКлиент.PostАсинх(адрес, заголовки, телоJson, ct).ConfigureAwait(false);
+
+        if (ответ is null)
+            return ExcelError.ExcelErrorNA;
+
+        if (string.IsNullOrWhiteSpace(jsonPath) || jsonPath == "$")
+            return ответ;
+
+        return JsonКлиент.JsonКлиент.JsonPathНайди(ответ, jsonPath);
+    }
+
+    #endregion
 }
