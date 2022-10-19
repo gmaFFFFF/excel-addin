@@ -4,41 +4,41 @@ using ExcelDna.Registration;
 namespace gmafffff.excel.udf.AddIn;
 
 public sealed class AddIn : IExcelAddIn {
-    private static ParameterConversionConfiguration автоПриведениеТиповКонфиг
+    private static ParameterConversionConfiguration Р°РІС‚РѕРџСЂРёРІРµРґРµРЅРёРµРўРёРїРѕРІРљРѕРЅС„РёРі
         => new ParameterConversionConfiguration()
-            // Добавляет поддержку параметров string[] (вместо этого принимается object[]).
-            // Использует служебный класс TypeConversion, определенный в ExcelDna.Registration, 
-            // преобразование выполняется Excel.
+            // Р”РѕР±Р°РІР»СЏРµС‚ РїРѕРґРґРµСЂР¶РєСѓ РїР°СЂР°РјРµС‚СЂРѕРІ string[] (РІРјРµСЃС‚Рѕ СЌС‚РѕРіРѕ РїСЂРёРЅРёРјР°РµС‚СЃСЏ object[]).
+            // РСЃРїРѕР»СЊР·СѓРµС‚ СЃР»СѓР¶РµР±РЅС‹Р№ РєР»Р°СЃСЃ TypeConversion, РѕРїСЂРµРґРµР»РµРЅРЅС‹Р№ РІ ExcelDna.Registration, 
+            // РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ Excel.
             .AddParameterConversion((object[] inputs) => inputs.Select(TypeConversion.ConvertToString).ToArray())
-            // Добавляет поддержку параметров string[,] (вместо этого принимается object[,]).
-            .AddParameterConversion((object[,] arr) => Массив2dОбъектовВМассив2dСтрок(arr))
-            // Пара очень общих преобразований для типов Enum
+            // Р”РѕР±Р°РІР»СЏРµС‚ РїРѕРґРґРµСЂР¶РєСѓ РїР°СЂР°РјРµС‚СЂРѕРІ string[,] (РІРјРµСЃС‚Рѕ СЌС‚РѕРіРѕ РїСЂРёРЅРёРјР°РµС‚СЃСЏ object[,]).
+            .AddParameterConversion((object[,] arr) => РњР°СЃСЃРёРІ2dРћР±СЉРµРєС‚РѕРІР’РњР°СЃСЃРёРІ2dРЎС‚СЂРѕРє(arr))
+            // РџР°СЂР° РѕС‡РµРЅСЊ РѕР±С‰РёС… РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёР№ РґР»СЏ С‚РёРїРѕРІ Enum
             .AddReturnConversion((Enum value) => value.ToString(), true)
             .AddParameterConversion(ParameterConversions.GetEnumStringConversion());
 
     public void AutoOpen() {
-        ExcelIntegration.RegisterUnhandledExceptionHandler(ex => $"!!! Ошибка: {ex}");
-        РегистрироватьФункции();
+        ExcelIntegration.RegisterUnhandledExceptionHandler(ex => $"!!! РћС€РёР±РєР°: {ex}");
+        Р РµРіРёСЃС‚СЂРёСЂРѕРІР°С‚СЊР¤СѓРЅРєС†РёРё();
     }
 
     public void AutoClose() { }
 
-    private static void РегистрироватьФункции() {
+    private static void Р РµРіРёСЃС‚СЂРёСЂРѕРІР°С‚СЊР¤СѓРЅРєС†РёРё() {
         ExcelRegistration.GetExcelFunctions()
             .ProcessMapArrayFunctions()
-            .ProcessParameterConversions(автоПриведениеТиповКонфиг)
+            .ProcessParameterConversions(Р°РІС‚РѕРџСЂРёРІРµРґРµРЅРёРµРўРёРїРѕРІРљРѕРЅС„РёРі)
             .ProcessAsyncRegistrations(true)
             .ProcessParamsRegistrations()
             .RegisterFunctions();
     }
 
 
-    private static string[,] Массив2dОбъектовВМассив2dСтрок(object[,] массив) {
-        var массивН = new string[массив.GetLength(0), массив.GetLength(1)];
-        for (var i = 0; i < массив.GetLength(0); i++)
-        for (var j = 0; j < массив.GetLength(1); j++)
-            массивН[i, j] = TypeConversion.ConvertToString(массив[i, j]);
+    private static string[,] РњР°СЃСЃРёРІ2dРћР±СЉРµРєС‚РѕРІР’РњР°СЃСЃРёРІ2dРЎС‚СЂРѕРє(object[,] РјР°СЃСЃРёРІ) {
+        var РјР°СЃСЃРёРІРќ = new string[РјР°СЃСЃРёРІ.GetLength(0), РјР°СЃСЃРёРІ.GetLength(1)];
+        for (var i = 0; i < РјР°СЃСЃРёРІ.GetLength(0); i++)
+        for (var j = 0; j < РјР°СЃСЃРёРІ.GetLength(1); j++)
+            РјР°СЃСЃРёРІРќ[i, j] = TypeConversion.ConvertToString(РјР°СЃСЃРёРІ[i, j]);
 
-        return массивН;
+        return РјР°СЃСЃРёРІРќ;
     }
 }
