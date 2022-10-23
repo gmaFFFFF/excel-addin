@@ -1,4 +1,5 @@
 using System.Text.Json;
+using JsonCons.JmesPath;
 using JsonCons.JsonPath;
 
 namespace gmafffff.excel.udf.JsonКлиент;
@@ -28,6 +29,25 @@ public sealed class JsonКлиент {
         var найдено = JsonSelector.Select(json.RootElement, запрос, настройкиПоиска);
 
         return ПреобразоватьJsonВСтроку(найдено);
+    }
+
+    public static object JmesPathИзмени(string jsonТекст, string запрос) {
+        if (string.IsNullOrWhiteSpace(jsonТекст) || string.IsNullOrWhiteSpace(запрос))
+            return "";
+
+        var настройкиПоиска = JsonSelectorOptions.Default;
+        настройкиПоиска.ExecutionMode = PathExecutionMode.Parallel;
+
+
+        using var json = JsonDocument.Parse(jsonТекст, JsonДокНастр);
+
+        var найдено = JsonTransformer.Transform(json.RootElement, запрос);
+
+        var элем = найдено is not null
+            ? new[] { найдено.RootElement }
+            : Array.Empty<JsonElement>();
+
+        return ПреобразоватьJsonВСтроку(элем);
     }
 
     private static object ПреобразоватьJsonВСтроку(IList<JsonElement> найдено) {
