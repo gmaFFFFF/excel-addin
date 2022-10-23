@@ -105,5 +105,30 @@ https://danielaparker.github.io/JsonCons.Net/articles/JsonPath/JsonConsJsonPath.
         return JsonКлиент.JsonКлиент.JsonPathНайди(ответ, jsonPath);
     }
 
+    [ExcelFunction(Name = "JsonPath", Category = МояКатегория,
+        Description =
+            @"Извлекает элементы json с помощью синтаксиса запросов JSONPath. Не умеет проецировать данные (например, фильтрация с последующим индексом массива). При необходимости проецировать данные используйте функцию JmesPath.
+Примеры запросов в справке",
+        HelpTopic = "https://danielaparker.github.io/JsonCons.Net/articles/JsonPath/JsonConsJsonPath.html#paths")]
+    public static object JsonPath(
+        [ExcelArgument(Name = "jsonТекст", Description = "Json документ")]
+        string jsonТекст,
+        [ExcelArgument(Name = "jsonPath", Description = @"JSONPath, подробнее о формате в справке к функции")]
+        string jsonPath) {
+        return JsonКлиент.JsonКлиент.JsonPathНайди(jsonТекст, jsonPath);
+    }
+
+    [ExcelFunction(Name = "JmesPath", Category = МояКатегория,
+        Description = @"Извлекает элементы json с помощью синтаксиса запросов JmesPath.
+Примеры запросов в справке",
+        HelpTopic = "https://jmespath.org/specification.html")]
+    public static object JmesPath(
+        [ExcelArgument(Name = "jsonТекст", Description = "Json документ")]
+        string jsonТекст,
+        [ExcelArgument(Name = "JmesPath", Description = @"JMESPath, подробнее о формате в справке к функции")]
+        string JmesPath) {
+        return JsonКлиент.JsonКлиент.JmesPathИзмени(jsonТекст, JmesPath);
+    }
+
     #endregion
 }
