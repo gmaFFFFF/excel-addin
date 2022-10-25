@@ -4,29 +4,107 @@ using ExcelDna.Registration;
 namespace gmafffff.excel.udf.AddIn;
 
 public static class Функции {
+    #region Пояснительные надписи
+
     private const string МояКатегория = "Функции от gmaFFFFF";
 
-    [ExcelFunction(Name = "РублиПрописью", Category = МояКатегория,
-        Description = "Отображает сумму в рублях прописью")]
+    // РублиПрописью
+    private const string РПИ = nameof(РублиПрописью);
+    private const string РПО = "Отображает сумму в рублях прописью";
+    private const string РПАСуммаИ = "суммаРублей";
+    private const string РПАСуммаО = "сумма, которую необходимо написать прописью";
+    private const string РПАФорматИ = "формат";
+
+    private const string РПAФорматО = "ч[n](сумма, n - знаков после запятой), б/д[n][т[з]]" +
+                                      "(целая/дробная часть, т - текстом, з - с заглавной, n - ширина), р/к[с]" +
+                                      "(валюта базовая/дробная, с - сокращенная). Пример: «ч2 рс (бтз р д2 к)»";
+
+    // ОкруглГаус
+    private const string ОГИ = nameof(ОкруглГаус);
+    private const string ОГО = "Округление по Гауссу до ближайшего четного знака";
+    private const string ОГАЧислоИ = "число";
+    private const string ОГАЧислоО = "округляемое число";
+    private const string ОГАЗнаковИ = "знаков";
+
+    private const string ОГАЗнаковО = "число знаков, до которых происходит округление. Если < 0, то перед запятой. " +
+                                      "Максимум 15 знаков, по умолчанию — 0";
+
+    // JSONPath и JMESPath
+    private const string JsonPathHelpUrl =
+        "https://danielaparker.github.io/JsonCons.Net/articles/JsonPath/JsonConsJsonPath.html";
+
+    private const string JmesPathHelpUrl = "https://jmespath.org/specification.html";
+
+    private const string JPИ = nameof(JsonPath);
+    private const string JmPИ = nameof(JmesPath);
+
+    private const string JPО = "Извлекает элементы json с помощью синтаксиса JSONPath. " +
+                               "Не умеет проецировать данные (например, фильтрация с последующим индексом массива). " +
+                               "При необходимости проецировать данные используйте функцию JmesPath.\n" +
+                               "Примеры запросов в справке";
+
+    private const string JmPО = "Извлекает элементы json с помощью синтаксиса JMESPath.\n" +
+                                "Примеры запросов в справке";
+
+    private const string JPJMАJsonТекстИ = "jsonТекст";
+    private const string JPJMАJsonТекстО = "Json документ";
+
+    private const string JPАJsonPathИ = "jsonPath";
+    private const string JPАJsonPathО = "JSONPath, подробнее о формате в справке к функции";
+    private const string JmPАJsonPathИ = "jmesPath";
+    private const string JmPАJsonPathО = "JMESPath, подробнее о формате в справке к функции";
+
+    // HttpGet и HttpPost
+    private const string HGИ = nameof(HttpGet);
+    private const string HPИ = nameof(HttpPost);
+
+    private const string HGPОобщее = "запрос по адресу и возвращает json объект с полями:\n" +
+                                     $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.ДатаЗапроса)}; " +
+                                     $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.Статус)}; " +
+                                     $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.Содержимое)}; " +
+                                     $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.Заголовки)} — заголовк ответа; " +
+                                     $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.Заголовки2)} — заголовк содержимого; " +
+                                     $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.Куки)} — куки.\n" +
+                                     "Не забывайте про ограничения по количеству символов в ячейке";
+
+    private const string HGО = "Выполняет Get " + HGPОобщее;
+    private const string HPО = "Выполняет Post " + HGPОобщее;
+
+    private const string HGPААдресИ = "адрес";
+    private const string HGPААдресО = "Url адрес, по которому необходимо сделать запрос";
+    private const string HGPАJsonPathИ = "jsonPath";
+
+    private const string HGPАJsonPathО = "Необязательный JSONPath позволяет выбрать нужный элемент из ответа.\n" +
+                                         "Подробнее о формате JSONPath по ссылке:\n" +
+                                         JsonPathHelpUrl;
+
+    private const string HGPАЗаголовкиИ = "заголовки";
+
+    private const string HGPАЗаголовкиО = "Необязательный диапазон с заголовками запроса:\n" +
+                                          "один столбец с заголовком\n" +
+                                          "один или несколько столбцов со значениями заголовка";
+
+    private const string HPАТелоИ = "тело";
+    private const string HPАТелоО = "Тело запроса в формате json (необязательно)";
+
+    #endregion
+
+    #region Без группировки
+
+    [ExcelFunction(Name = РПИ, Category = МояКатегория, Description = РПО)]
     public static string РублиПрописью(
-        [ExcelArgument(Name = "суммаРублей", Description = "сумма, которую необходимо написать прописью")]
+        [ExcelArgument(Name = РПАСуммаИ, Description = РПАСуммаО)]
         double сумма,
-        [ExcelArgument(Name = "формат",
-            Description =
-                @"ч[n](сумма, n - знаков после запятой), б/д[n][т[з]] (целая/дробная часть, т - текстом, з - с заглавной, n - ширина), р/к[с] (валюта базовая/дробная, с - сокращенная). Пример: ""ч2 рс (бтз р д2 к)""")]
+        [ExcelArgument(Name = РПАФорматИ, Description = РПAФорматО)]
         string формат = "") {
         return ДеньгиПрописью.ДеньгиПрописью.РублиПрописью(сумма, формат);
     }
 
-    [ExcelFunction(Name = "ОкруглГаус", Category = МояКатегория,
-        Description = "Округление по Гауссу до ближайшего четного знака")]
-    public static double ОкруглГ(
-        [ExcelArgument(Name = "число", Description = "округляемое число")]
+    [ExcelFunction(Name = ОГИ, Category = МояКатегория, Description = ОГО)]
+    public static double ОкруглГаус(
+        [ExcelArgument(Name = ОГАЧислоИ, Description = ОГАЧислоО)]
         double число,
-        [ExcelArgument(Name = "знаков",
-            Description = @"число знаков, до которых происходит округление.
-Если число отрицательное, то округление до десятков перед запятой.
-Максимум 15 знаков")]
+        [ExcelArgument(Name = ОГАЗнаковИ, Description = ОГАЗнаковО)]
         short знаков) {
         return (знаков, Math.Pow(10, -знаков)) switch {
             (> 15, _) => Math.Round(число, 15, MidpointRounding.ToEven),
@@ -35,22 +113,17 @@ public static class Функции {
         };
     }
 
+    #endregion
+
     #region Http
 
-    [ExcelAsyncFunction(Name = "HttpGet", Category = МояКатегория,
-        Description = @$"Выполняет Get запрос по адресу и возвращает json объект с полями:
-{nameof(HttpКлиент.HttpКлиент.ОтветHttp.ДатаЗапроса)}; {nameof(HttpКлиент.HttpКлиент.ОтветHttp.Статус)}; {nameof(HttpКлиент.HttpКлиент.ОтветHttp.Содержимое)}; {nameof(HttpКлиент.HttpКлиент.ОтветHttp.Заголовки)} — заголовк ответа; {nameof(HttpКлиент.HttpКлиент.ОтветHttp.Заголовки2)} — заголовк содержимого; {nameof(HttpКлиент.HttpКлиент.ОтветHttp.Куки)} — куки.
-Не забывайте про ограничения по количеству символов в ячейке")]
+    [ExcelAsyncFunction(Name = HGИ, Category = МояКатегория, Description = HGО)]
     public static async Task<object> HttpGet(
-        [ExcelArgument(Name = "адрес", Description = "Url адрес, по которому необходимо сделать запрос")]
+        [ExcelArgument(Name = HGPААдресИ, Description = HGPААдресО)]
         string адрес,
-        [ExcelArgument(Name = "jsonPath", Description =
-            @"Задаётся в формате JSONPath и позволяет сразу перейти к нужному элементу Json.
-Подробнее о формате JSONPath по ссылке:
-https://danielaparker.github.io/JsonCons.Net/articles/JsonPath/JsonConsJsonPath.html")]
+        [ExcelArgument(Name = HGPАJsonPathИ, Description = HGPАJsonPathО)]
         string jsonPath = "$",
-        [ExcelArgument(Name = "заголовки", Description =
-            "Диапазон: столбец с названиями и столбцы со значениями заголовка запроса (необязательно)")]
+        [ExcelArgument(Name = HGPАЗаголовкиИ, Description = HGPАЗаголовкиО)]
         string[,]? заголовки = null,
         CancellationToken ct = default) {
         // Предотвращает выполнение пока запущен мастер функций
@@ -70,22 +143,15 @@ https://danielaparker.github.io/JsonCons.Net/articles/JsonPath/JsonConsJsonPath.
         return JsonКлиент.JsonКлиент.JsonPathНайди(ответ, jsonPath);
     }
 
-    [ExcelAsyncFunction(Name = "HttpPost", Category = МояКатегория,
-        Description = $@"Выполняет Post запрос по адресу и возвращает json объект с полями:
-{nameof(HttpКлиент.HttpКлиент.ОтветHttp.ДатаЗапроса)}; {nameof(HttpКлиент.HttpКлиент.ОтветHttp.Статус)}; {nameof(HttpКлиент.HttpКлиент.ОтветHttp.Содержимое)}; {nameof(HttpКлиент.HttpКлиент.ОтветHttp.Заголовки)} — заголовк ответа; {nameof(HttpКлиент.HttpКлиент.ОтветHttp.Заголовки2)} — заголовк содержимого; {nameof(HttpКлиент.HttpКлиент.ОтветHttp.Куки)} — куки
-Не забывайте про ограничения по количеству символов в ячейке")]
+    [ExcelAsyncFunction(Name = HPИ, Category = МояКатегория, Description = HPО)]
     public static async Task<object> HttpPost(
-        [ExcelArgument(Name = "адрес", Description = "Url адрес, по которому необходимо сделать запрос")]
+        [ExcelArgument(Name = HGPААдресИ, Description = HGPААдресО)]
         string адрес,
-        [ExcelArgument(Name = "jsonPath", Description =
-            @"Задаётся в формате JSONPath и позволяет сразу перейти к нужному элементу Json.
-Подробнее о формате JSONPath по ссылке:
-https://danielaparker.github.io/JsonCons.Net/articles/JsonPath/JsonConsJsonPath.html")]
+        [ExcelArgument(Name = HGPАJsonPathИ, Description = HGPАJsonPathО)]
         string jsonPath = "$",
-        [ExcelArgument(Name = "заголовки", Description =
-            "Диапазон: столбец с названиями и столбцы со значениями заголовка запроса (необязательно)")]
+        [ExcelArgument(Name = HGPАЗаголовкиИ, Description = HGPАЗаголовкиО)]
         string[,]? заголовки = null,
-        [ExcelArgument(Name = "тело", Description = "Тело запроса в формате json")]
+        [ExcelArgument(Name = HPАТелоИ, Description = HPАТелоО)]
         string? телоJson = null,
         CancellationToken ct = default) {
         // Предотвращает выполнение пока запущен мастер функций
@@ -105,29 +171,22 @@ https://danielaparker.github.io/JsonCons.Net/articles/JsonPath/JsonConsJsonPath.
         return JsonКлиент.JsonКлиент.JsonPathНайди(ответ, jsonPath);
     }
 
-    [ExcelFunction(Name = "JsonPath", Category = МояКатегория,
-        Description =
-            @"Извлекает элементы json с помощью синтаксиса запросов JSONPath. Не умеет проецировать данные (например, фильтрация с последующим индексом массива). При необходимости проецировать данные используйте функцию JmesPath.
-Примеры запросов в справке",
-        HelpTopic = "https://danielaparker.github.io/JsonCons.Net/articles/JsonPath/JsonConsJsonPath.html#paths")]
+    [ExcelFunction(Name = JPИ, Category = МояКатегория, Description = JPО, HelpTopic = JsonPathHelpUrl)]
     public static object JsonPath(
-        [ExcelArgument(Name = "jsonТекст", Description = "Json документ")]
+        [ExcelArgument(Name = JPJMАJsonТекстИ, Description = JPJMАJsonТекстО)]
         string jsonТекст,
-        [ExcelArgument(Name = "jsonPath", Description = @"JSONPath, подробнее о формате в справке к функции")]
+        [ExcelArgument(Name = JPАJsonPathИ, Description = JPАJsonPathО)]
         string jsonPath) {
         return JsonКлиент.JsonКлиент.JsonPathНайди(jsonТекст, jsonPath);
     }
 
-    [ExcelFunction(Name = "JmesPath", Category = МояКатегория,
-        Description = @"Извлекает элементы json с помощью синтаксиса запросов JmesPath.
-Примеры запросов в справке",
-        HelpTopic = "https://jmespath.org/specification.html")]
+    [ExcelFunction(Name = JmPИ, Category = МояКатегория, Description = JmPО, HelpTopic = JmesPathHelpUrl)]
     public static object JmesPath(
-        [ExcelArgument(Name = "jsonТекст", Description = "Json документ")]
+        [ExcelArgument(Name = JPJMАJsonТекстИ, Description = JPJMАJsonТекстО)]
         string jsonТекст,
-        [ExcelArgument(Name = "JmesPath", Description = @"JMESPath, подробнее о формате в справке к функции")]
-        string JmesPath) {
-        return JsonКлиент.JsonКлиент.JmesPathИзмени(jsonТекст, JmesPath);
+        [ExcelArgument(Name = JmPАJsonPathИ, Description = JmPАJsonPathО)]
+        string jmesPath) {
+        return JsonКлиент.JsonКлиент.JmesPathИзмени(jsonТекст, jmesPath);
     }
 
     #endregion
