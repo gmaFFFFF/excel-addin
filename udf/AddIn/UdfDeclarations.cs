@@ -1,3 +1,4 @@
+using System.Text;
 using ExcelDna.Integration;
 using ExcelDna.Registration;
 
@@ -86,6 +87,19 @@ public static class Функции {
 
     private const string HPАТелоИ = "тело";
     private const string HPАТелоО = "Тело запроса в формате json (необязательно)";
+
+    // Base64Кодировать и Base64Декодировать
+    private const string B64КИ = nameof(Base64Кодировать);
+    private const string B64ДИ = nameof(Base64Декодировать);
+
+    private const string B64КО = "Кодирует текст в base64 код";
+    private const string B64ДО = "Декодирует текст из формата base64";
+
+    private const string B64КАТекстИ = "текст";
+    private const string B64КАТекстО = "текст для кодирования";
+
+    private const string B64ДАbase64ТекстИ = "base64Текст";
+    private const string B64ДАbase64ТекстО = "текст закодированный в формате base64";
 
     #endregion
 
@@ -187,6 +201,22 @@ public static class Функции {
         [ExcelArgument(Name = JmPАJsonPathИ, Description = JmPАJsonPathО)]
         string jmesPath) {
         return JsonКлиент.JsonКлиент.JmesPathИзмени(jsonТекст, jmesPath);
+    }
+
+    [ExcelFunction(Name = B64КИ, Category = МояКатегория, Description = B64КО)]
+    public static string Base64Кодировать(
+        [ExcelArgument(Name = B64КАТекстИ, Description = B64КАТекстО)]
+        string текст) {
+        var байты = Encoding.UTF8.GetBytes(текст);
+        return Convert.ToBase64String(байты);
+    }
+
+    [ExcelFunction(Name = B64ДИ, Category = МояКатегория, Description = B64ДО)]
+    public static string Base64Декодировать(
+        [ExcelArgument(Name = B64ДАbase64ТекстИ, Description = B64ДАbase64ТекстО)]
+        string base64Текст) {
+        var байты = Convert.FromBase64String(base64Текст);
+        return Encoding.UTF8.GetString(байты);
     }
 
     #endregion
