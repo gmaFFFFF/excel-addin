@@ -7,6 +7,9 @@ using System.Text.Json;
 
 namespace gmafffff.excel.udf.HttpКлиент;
 
+// Представляет любой объект в формате JSON
+using ОбъектJson = Dictionary<string, JsonElement>;
+
 public sealed class HttpКлиент {
     private static readonly HttpClient Клиент;
 
@@ -15,19 +18,21 @@ public sealed class HttpКлиент {
     }
 
     public static async Task<string?> GetАсинх(string адрес, string[,]? заголовкиСтр = null,
+        string? заголовкиJson = null,
         CancellationToken ct = default) {
-        return await ПослатьАсинх(HttpMethod.Get, адрес, заголовкиСтр ?? new string[0, 0], null, ct)
+        return await ПослатьАсинх(HttpMethod.Get, адрес, заголовкиСтр ?? new string[0, 0], заголовкиJson, null, ct)
             .ConfigureAwait(false);
     }
 
-    public static async Task<string?> PostАсинх(string адрес, string[,]? заголовкиСтр, string? телоJson,
+    public static async Task<string?> PostАсинх(string адрес, string[,]? заголовкиСтр,
+        string? заголовкиJson = null, string? телоJson = null,
         CancellationToken ct = default) {
-        return await ПослатьАсинх(HttpMethod.Post, адрес, заголовкиСтр ?? new string[0, 0], телоJson, ct)
+        return await ПослатьАсинх(HttpMethod.Post, адрес, заголовкиСтр ?? new string[0, 0], заголовкиJson, телоJson, ct)
             .ConfigureAwait(false);
     }
 
-    public static async Task<string?> ПослатьАсинх(HttpMethod метод, string адрес,
-        string[,] заголовкиСтр, string? телоJson,
+    public static async Task<string?> ПослатьАсинх(HttpMethod метод, string адрес, string[,] заголовкиСтр,
+        string? заголовкиJson, string? телоJson,
         CancellationToken ct = default) {
         if (string.IsNullOrWhiteSpace(адрес))
             return null;
@@ -41,7 +46,6 @@ public sealed class HttpКлиент {
         адрес = адрес.Trim();
 
         using var запрос = СформироватьЗапросHttp();
-        using var ответHttpСообщение = await Клиент.SendAsync(запрос, ct).ConfigureAwait(false);
         using var ответ = await СформироватьОтвет();
 
         return JsonSerializer.Serialize(ответ, jsonSerializerOptions);
@@ -69,6 +73,25 @@ public sealed class HttpКлиент {
                 запросHttp.Headers.Add(название, значения);
             }
 
+            if (!string.IsNullOrWhiteSpace(заголовкиJson)) {
+                var заголовкиСписок =
+                    JsonSerializer.Deserialize<List<ОбъектJson>>(заголовкиJson, jsonSerializerOptions);
+                var допЗаголовки = from заголовокObj in заголовкиСписок
+                    from заголовок in заголовокObj
+                    let имя = заголовок.Key
+                    let парамм = заголовок.Value.ValueKind == JsonValueKind.Array
+                        ? заголовок.Value.EnumerateArray()
+                        : new[] { заголовок.Value }.AsEnumerable()
+                    let параммStr = парамм
+                        .Select(п => п.ValueKind == JsonValueKind.String
+                            ? п.GetString()
+                            : п.GetRawText())
+                    select (имя, параммStr);
+
+                foreach (var (имя, параммStr) in допЗаголовки)
+                    запросHttp.Headers.Add(имя, параммStr);
+            }
+
             return запросHttp;
         }
 
@@ -82,6 +105,7 @@ public sealed class HttpКлиент {
         }
 
         async Task<ОтветHttp> СформироватьОтвет() {
+            using var ответHttpСообщение = await Клиент.SendAsync(запрос, ct).ConfigureAwait(false);
             var содержаниеStr = ответHttpСообщение is { IsSuccessStatusCode: true }
                 ? await ответHttpСообщение.Content.ReadAsStringAsync(ct).ConfigureAwait(false)
                 : null;
