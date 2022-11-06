@@ -80,10 +80,14 @@ public static class Функции {
                                          JsonPathHelpUrl;
 
     private const string HGPАЗаголовкиИ = "заголовки";
+    private const string HGPАЗаголовкиJИ = "заголовкиJSON";
 
     private const string HGPАЗаголовкиО = "Необязательный диапазон с заголовками запроса:\n" +
                                           "один столбец с заголовком\n" +
                                           "один или несколько столбцов со значениями заголовка";
+
+    private const string HGPАЗаголовкиJО = "Необязательные заголовки в формате массива объектов JSON:\n" +
+                                           "[{\"Заголовок1\":[\"знач1\",\"знач2\"]},{\"Заголовок2\":\"знач3\"}]";
 
     private const string HPАТелоИ = "тело";
     private const string HPАТелоО = "Тело запроса в формате json (необязательно)";
@@ -139,6 +143,8 @@ public static class Функции {
         string jsonPath = "$",
         [ExcelArgument(Name = HGPАЗаголовкиИ, Description = HGPАЗаголовкиО)]
         string[,]? заголовки = null,
+        [ExcelArgument(Name = HGPАЗаголовкиJИ, Description = HGPАЗаголовкиJО)]
+        string? заголовкиJson = null,
         CancellationToken ct = default) {
         // Предотвращает выполнение пока запущен мастер функций
         if (ExcelDnaUtil.IsInFunctionWizard()) return "";
@@ -146,7 +152,7 @@ public static class Функции {
         if (заголовки?.Length == 1)
             заголовки = null;
 
-        var ответ = await HttpКлиент.HttpКлиент.GetАсинх(адрес, заголовки, ct).ConfigureAwait(false);
+        var ответ = await HttpКлиент.HttpКлиент.GetАсинх(адрес, заголовки, заголовкиJson, ct).ConfigureAwait(false);
 
         if (ответ is null)
             return ExcelError.ExcelErrorNA;
@@ -165,6 +171,8 @@ public static class Функции {
         string jsonPath = "$",
         [ExcelArgument(Name = HGPАЗаголовкиИ, Description = HGPАЗаголовкиО)]
         string[,]? заголовки = null,
+        [ExcelArgument(Name = HGPАЗаголовкиJИ, Description = HGPАЗаголовкиJО)]
+        string? заголовкиJson = null,
         [ExcelArgument(Name = HPАТелоИ, Description = HPАТелоО)]
         string? телоJson = null,
         CancellationToken ct = default) {
@@ -174,7 +182,8 @@ public static class Функции {
         if (заголовки?.Length == 1)
             заголовки = null;
 
-        var ответ = await HttpКлиент.HttpКлиент.PostАсинх(адрес, заголовки, телоJson, ct).ConfigureAwait(false);
+        var ответ = await HttpКлиент.HttpКлиент.PostАсинх(адрес, заголовки, заголовкиJson, телоJson, ct)
+            .ConfigureAwait(false);
 
         if (ответ is null)
             return ExcelError.ExcelErrorNA;
