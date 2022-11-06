@@ -50,6 +50,12 @@ public sealed class JsonКлиент {
         return ПреобразоватьJsonВСтроку(элем);
     }
 
+    public static object JsonИндекс(string jsonТекст, params string[] индексы) {
+        var обработать = (string i) => int.TryParse(i, out _) ? $"[{i}]" : $"['{i}']";
+        var запрос = "$" + string.Concat(индексы.Select(i => обработать(i)));
+        return JsonPathНайди(jsonТекст, запрос);
+    }
+
     private static object ПреобразоватьJsonВСтроку(IList<JsonElement> найдено) {
         var настройкиСохран = new JsonSerializerOptions { WriteIndented = true, AllowTrailingCommas = true };
 

@@ -30,15 +30,18 @@ public static class Функции {
     private const string ОГАЗнаковО = "число знаков, до которых происходит округление. Если < 0, то перед запятой. " +
                                       "Максимум 15 знаков, по умолчанию — 0";
 
-    // JSONPath и JMESPath
+    // JSONPath, JMESPath, JsonИндекс
     private const string JsonPathHelpUrl =
         "https://danielaparker.github.io/JsonCons.Net/articles/JsonPath/JsonConsJsonPath.html";
 
     private const string JmesPathHelpUrl = "https://jmespath.org/specification.html";
 
+    private const string JИИ = nameof(JsonИндекс);
     private const string JPИ = nameof(JsonPath);
     private const string JmPИ = nameof(JmesPath);
 
+    private const string JИО = "Извлекает элементы json по индексу";
+    
     private const string JPО = "Извлекает элементы json с помощью синтаксиса JSONPath. " +
                                "Не умеет проецировать данные (например, фильтрация с последующим индексом массива). " +
                                "При необходимости проецировать данные используйте функцию JmesPath.\n" +
@@ -50,6 +53,8 @@ public static class Функции {
     private const string JPJMАJsonТекстИ = "jsonТекст";
     private const string JPJMАJsonТекстО = "Json документ";
 
+    private const string JИАИндексИ = "индекс";
+    private const string JИАИндексО = "индексы для доступа к JSON";
     private const string JPАJsonPathИ = "jsonPath";
     private const string JPАJsonPathО = "JSONPath, подробнее о формате в справке к функции";
     private const string JmPАJsonPathИ = "jmesPath";
@@ -194,6 +199,14 @@ public static class Функции {
         return JsonКлиент.JsonКлиент.JsonPathНайди(ответ, jsonPath);
     }
 
+    [ExcelFunction(Name = JИИ, Category = МояКатегория, Description = JИО)]
+    public static object JsonИндекс(
+        [ExcelArgument(Name = JPJMАJsonТекстИ, Description = JPJMАJsonТекстО)]
+        string jsonТекст,
+        [ExcelArgument(Name = JИАИндексИ, Description = JИАИндексО)]
+        params string[] индексы)
+        => JsonКлиент.JsonКлиент.JsonИндекс(jsonТекст, индексы);
+    
     [ExcelFunction(Name = JPИ, Category = МояКатегория, Description = JPО, HelpTopic = JsonPathHelpUrl)]
     public static object JsonPath(
         [ExcelArgument(Name = JPJMАJsonТекстИ, Description = JPJMАJsonТекстО)]
