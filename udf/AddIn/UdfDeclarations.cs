@@ -41,7 +41,7 @@ public static class Функции {
     private const string JmPИ = nameof(JmesPath);
 
     private const string JИО = "Извлекает элементы json по индексу";
-    
+
     private const string JPО = "Извлекает элементы json с помощью синтаксиса JSONPath. " +
                                "Не умеет проецировать данные (например, фильтрация с последующим индексом массива). " +
                                "При необходимости проецировать данные используйте функцию JmesPath.\n" +
@@ -114,7 +114,7 @@ public static class Функции {
 
     #region Без группировки
 
-    [ExcelFunction(Name = РПИ, Category = МояКатегория, Description = РПО)]
+    [ExcelFunction(Name = РПИ, Category = МояКатегория, Description = РПО, IsThreadSafe = true)]
     public static string РублиПрописью(
         [ExcelArgument(Name = РПАСуммаИ, Description = РПАСуммаО)]
         double сумма,
@@ -123,7 +123,7 @@ public static class Функции {
         return ДеньгиПрописью.ДеньгиПрописью.РублиПрописью(сумма, формат);
     }
 
-    [ExcelFunction(Name = ОГИ, Category = МояКатегория, Description = ОГО)]
+    [ExcelFunction(Name = ОГИ, Category = МояКатегория, Description = ОГО, IsThreadSafe = true)]
     public static double ОкруглГаус(
         [ExcelArgument(Name = ОГАЧислоИ, Description = ОГАЧислоО)]
         double число,
@@ -199,15 +199,16 @@ public static class Функции {
         return JsonКлиент.JsonКлиент.JsonPathНайди(ответ, jsonPath);
     }
 
-    [ExcelFunction(Name = JИИ, Category = МояКатегория, Description = JИО)]
+    [ExcelFunction(Name = JИИ, Category = МояКатегория, Description = JИО, IsThreadSafe = true)]
     public static object JsonИндекс(
         [ExcelArgument(Name = JPJMАJsonТекстИ, Description = JPJMАJsonТекстО)]
         string jsonТекст,
         [ExcelArgument(Name = JИАИндексИ, Description = JИАИндексО)]
         params string[] индексы)
         => JsonКлиент.JsonКлиент.JsonИндекс(jsonТекст, индексы);
-    
-    [ExcelFunction(Name = JPИ, Category = МояКатегория, Description = JPО, HelpTopic = JsonPathHelpUrl)]
+
+    [ExcelFunction(Name = JPИ, Category = МояКатегория, Description = JPО, HelpTopic = JsonPathHelpUrl,
+        IsThreadSafe = true)]
     public static object JsonPath(
         [ExcelArgument(Name = JPJMАJsonТекстИ, Description = JPJMАJsonТекстО)]
         string jsonТекст,
@@ -216,7 +217,8 @@ public static class Функции {
         return JsonКлиент.JsonКлиент.JsonPathНайди(jsonТекст, jsonPath);
     }
 
-    [ExcelFunction(Name = JmPИ, Category = МояКатегория, Description = JmPО, HelpTopic = JmesPathHelpUrl)]
+    [ExcelFunction(Name = JmPИ, Category = МояКатегория, Description = JmPО, HelpTopic = JmesPathHelpUrl,
+        IsThreadSafe = true)]
     public static object JmesPath(
         [ExcelArgument(Name = JPJMАJsonТекстИ, Description = JPJMАJsonТекстО)]
         string jsonТекст,
@@ -225,7 +227,7 @@ public static class Функции {
         return JsonКлиент.JsonКлиент.JmesPathИзмени(jsonТекст, jmesPath);
     }
 
-    [ExcelFunction(Name = B64КИ, Category = МояКатегория, Description = B64КО)]
+    [ExcelFunction(Name = B64КИ, Category = МояКатегория, Description = B64КО, IsThreadSafe = true)]
     public static string Base64Кодировать(
         [ExcelArgument(Name = B64КАТекстИ, Description = B64КАТекстО)]
         string текст) {
@@ -233,7 +235,7 @@ public static class Функции {
         return Convert.ToBase64String(байты);
     }
 
-    [ExcelFunction(Name = B64ДИ, Category = МояКатегория, Description = B64ДО)]
+    [ExcelFunction(Name = B64ДИ, Category = МояКатегория, Description = B64ДО, IsThreadSafe = true)]
     public static string Base64Декодировать(
         [ExcelArgument(Name = B64ДАbase64ТекстИ, Description = B64ДАbase64ТекстО)]
         string base64Текст) {

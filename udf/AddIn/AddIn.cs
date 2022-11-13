@@ -27,7 +27,12 @@ public sealed class AddIn : IExcelAddIn {
         ExcelRegistration.GetExcelFunctions()
             .ProcessMapArrayFunctions()
             .ProcessParameterConversions(автоПриведениеТиповКонфиг)
-            .ProcessAsyncRegistrations(true)
+            // Преимущество встроенной поддержки асинхронных функций (nativeAsyncIfAvailable):
+            //   — пока функция вычисляется в ячейке будет отображаться #ВЫЧИСЛ! вместо #Н/Д
+            // Недостатки встроенной поддержки асинхронных функций:
+            //   — требуется два раза нажать Enter, чтобы продолжить ввод даных;
+            //   — субъективно работает медленнее.
+            .ProcessAsyncRegistrations(nativeAsyncIfAvailable: false)
             .ProcessParamsRegistrations()
             .RegisterFunctions();
     }
