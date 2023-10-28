@@ -27,6 +27,7 @@
     -->
     <Reference Path="DecimalEx.dll" Pack="true"/>
     <Reference Path="ExcelDna.Registration.dll" Pack="true"/>
+    <Reference Path="ExcelDna.IntelliSense.dll" Pack="true"/>
     <Reference Path="JsonCons.Utilities.dll" Pack="true"/>
     <Reference Path="JsonCons.JmesPath.dll" Pack="true"/>
     <Reference Path="JsonCons.JsonPath.dll" Pack="true"/>

@@ -15,16 +15,17 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DecimalMath.DecimalEx" Version="1.0.2"/>
-        <PackageReference Include="ExcelDna.AddIn" Version="1.6.0"/>
-        <PackageReference Include="ExcelDna.Registration" Version="1.6.0"/>
-        <PackageReference Include="JsonCons.JmesPath" Version="1.0.0"/>
-        <PackageReference Include="JsonCons.JsonPath" Version="1.1.0"/>
+        <PackageReference Include="DecimalMath.DecimalEx" Version="1.0.2" />
+        <PackageReference Include="ExcelDna.AddIn" Version="1.6.0" />
+        <PackageReference Include="ExcelDna.IntelliSense" Version="1.6.0" />
+        <PackageReference Include="ExcelDna.Registration" Version="1.6.0" />
+        <PackageReference Include="JsonCons.JmesPath" Version="1.0.0" />
+        <PackageReference Include="JsonCons.JsonPath" Version="1.1.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="Properties\ExcelDna.Build.props"/>
-        <None Include="gmafffff.excel.udf.dna"/>
+        <None Include="Properties\ExcelDna.Build.props" />
+        <None Include="gmafffff.excel.udf.dna" />
     </ItemGroup>
 
 </Project>

@@ -1,4 +1,5 @@
 using ExcelDna.Integration;
+using ExcelDna.IntelliSense;
 using ExcelDna.Registration;
 
 namespace gmafffff.excel.udf.AddIn;
@@ -19,9 +20,13 @@ public sealed class AddIn : IExcelAddIn {
     public void AutoOpen() {
         ExcelIntegration.RegisterUnhandledExceptionHandler(ex => $"!!! Ошибка: {ex}");
         РегистрироватьФункции();
+
+        IntelliSenseServer.Install(); // Важен порядок вызова после регистрации функций, иначе нужен Refresh
     }
 
-    public void AutoClose() { }
+    public void AutoClose() {
+        IntelliSenseServer.Uninstall();
+    }
 
     private static void РегистрироватьФункции() {
         ExcelRegistration.GetExcelFunctions()
