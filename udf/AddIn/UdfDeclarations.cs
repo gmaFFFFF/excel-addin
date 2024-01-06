@@ -61,20 +61,23 @@ public static class Функции {
     private const string JmPАJsonPathО = "JMESPath, подробнее о формате в справке к функции";
 
     // HttpGet и HttpPost
-    private const string HGИ = nameof(HttpGet);
-    private const string HPИ = nameof(HttpPost);
+    private const string HGАктивИ = nameof(HttpGet_active);
+    private const string HPАктивИ = nameof(HttpPost_active);
 
-    private const string HGPОобщее = "запрос по адресу и возвращает json объект с полями:\n" +
+    private const string HGPОобщее = "запрос возвращает json с полями: " +
                                      $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.ДатаЗапроса)}; " +
                                      $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.Статус)}; " +
                                      $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.Содержимое)}; " +
-                                     $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.Заголовки)} — заголовк ответа; " +
-                                     $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.Заголовки2)} — заголовк содержимого; " +
-                                     $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.Куки)} — куки.\n" +
-                                     "Не забывайте про ограничения по количеству символов в ячейке";
+                                     $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.Заголовки)} (ответа); " +
+                                     $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.Заголовки2)} (содержимого); " +
+                                     $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.Куки)}.\n";
 
-    private const string HGО = "Выполняет Get " + HGPОобщее;
-    private const string HPО = "Выполняет Post " + HGPОобщее;
+    private const string HGАктив_HPАктив_Предупреждение = "Внимание: " +
+                                                          "1)выполняется ОЧЕНЬ часто — при пересчете листа," +
+                                                          "2)кол-во символов в ячейке ограничено";
+
+    private const string HGАктивО = "Get " + HGPОобщее + HGАктив_HPАктив_Предупреждение;
+    private const string HPАктивО = "Post " + HGPОобщее + HGАктив_HPАктив_Предупреждение;
 
     private const string HGPААдресИ = "адрес";
     private const string HGPААдресО = "Url адрес, по которому необходимо сделать запрос";
@@ -140,8 +143,8 @@ public static class Функции {
 
     #region Http
 
-    [ExcelAsyncFunction(Name = HGИ, Category = МояКатегория, Description = HGО)]
-    public static async Task<object> HttpGet(
+    [ExcelAsyncFunction(Name = HGАктивИ, Category = МояКатегория, Description = HGАктивО)]
+    public static async Task<object> HttpGet_active(
         [ExcelArgument(Name = HGPААдресИ, Description = HGPААдресО)]
         string адрес,
         [ExcelArgument(Name = HGPАJsonPathИ, Description = HGPАJsonPathО)]
@@ -168,8 +171,8 @@ public static class Функции {
         return JsonКлиент.JsonКлиент.JsonPathНайди(ответ, jsonPath);
     }
 
-    [ExcelAsyncFunction(Name = HPИ, Category = МояКатегория, Description = HPО)]
-    public static async Task<object> HttpPost(
+    [ExcelAsyncFunction(Name = HPАктивИ, Category = МояКатегория, Description = HPАктивО)]
+    public static async Task<object> HttpPost_active(
         [ExcelArgument(Name = HGPААдресИ, Description = HGPААдресО)]
         string адрес,
         [ExcelArgument(Name = HGPАJsonPathИ, Description = HGPАJsonPathО)]
