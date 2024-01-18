@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="ExcelDnaProps">
     <!--
-      Если Вы изменяется настройки в этом файле, то они не будут применяться пока Вы не сделаете:
+    Если Вы изменяется настройки в этом файле, то они не будут применяться пока Вы не сделаете:
          * Перестройте (Rebuild) решение(solution)/проект
          или
          * Закройте Visual Studio
@@ -9,68 +9,212 @@
          * Удалите (если существует) файл <название проекта>.csproj.user (или эквивалент VB, F# и т.д.)
          * Удалите (если существует) файл SolutionName.suo
          * Откройте заново Ваше решение(solution)/проект в Visual Studio
-      -->
+    -->
 
     <!--
-      Настройки конфигурации отладкии Excel-DNA add-ins
+    Настройки конфигурации отладкии Excel-DNA add-ins
     -->
     <PropertyGroup>
-        <!--
-          Активировать/деактивировать возможность отладки
-          Включить/отключить настройку параметров отладки при сборке проекта
+        <!--        
+        Включить создание профиля в launchSettings.json, запускающего Excel.
+        Значение по умолчанию: true 
         -->
-        <RunExcelDnaSetDebuggerOptions Condition="'$(RunExcelDnaSetDebuggerOptions)' == ''">true</RunExcelDnaSetDebuggerOptions>
+        <RunExcelDnaSetDebuggerOptions Condition="'$(RunExcelDnaSetDebuggerOptions)' == ''"/>
+
+        <!--        
+        Включить создание профиля в launchSettings.json, запускающего Excel, вне VisualStudio, например, 
+        через cli или в другой IDE.
+        Значение по умолчанию: false 
+        -->
+        <RunExcelDnaSetDebuggerOptionsOutsideVisualStudio Condition="'$(RunExcelDnaSetDebuggerOptionsOutsideVisualStudio)' == ''"/>
 
         <!--
-          Переопределите путь к EXCEL.EXE, используемый для отладки проекта (при необходимости)
-          По умолчанию будет использоваться последняя версия Excel, которую можно найти на компьютере          
+        Переопределите путь к EXCEL.EXE, используемый для отладки проекта (при необходимости)
+        По умолчанию будет использоваться последняя версия Excel, которую можно найти на компьютере          
         -->
         <ExcelDnaExcelExePath Condition="'$(ExcelDnaExcelExePath)' == ''"/>
 
         <!--
-          Переопределите имя надстройки .XLL для использования при отладке проекта  (при необходимости)
-          По умолчанию будет использоваться первая не упакованная надстройка .xll, которая соответствует разрядности EXCEL.EXE
+        Переопределите имя надстройки .XLL для использования при отладке проекта  (при необходимости)
+        По умолчанию будет использоваться первая не упакованная надстройка .xll, которая соответствует разрядности EXCEL.EXE
         -->
         <ExcelDnaAddInForDebugging Condition="'$(ExcelDnaAddInForDebugging)' == ''"/>
     </PropertyGroup>
 
     <!--
-      Свойства конфигурации для создания файлов .dna
+    Выходные названия файлов и пути
     -->
     <PropertyGroup>
+        <!-- 
+        Выходной каталог для 'опубликованного' add-in. Используй %none% для размещения в том же выходном каталоге.
+        Значение по умолчанию: 
+            publish — для проектов в SDK-стиле, 
+            %none% — для проектов старого стиля. 
+        -->
+        <ExcelDnaPublishPath/>
+
         <!--
-          Включить/отключить автоматическое создание файлов .dna для конкретной платформы.
+        Включить/отключить автоматическое создание add-in для конкретной платформы.
         -->
         <ExcelDnaCreate32BitAddIn Condition="'$(ExcelDnaCreate32BitAddIn)' == ''">true</ExcelDnaCreate32BitAddIn>
         <ExcelDnaCreate64BitAddIn Condition="'$(ExcelDnaCreate64BitAddIn)' == ''">true</ExcelDnaCreate64BitAddIn>
 
-        <!--
-          Define the suffix used for each platform-specific file e.g. MyAddIn64.dna
-          Определите суффикс, используемый для .dna файла конкретной платформы, например, МойAddIn64.dna
+        <!-- 
+        Название Add-in для выходного файл. В итоге комбинируется с суффиксом.
+        Значение по умолчанию: $(ProjectName)-AddIn 
+        -->
+        <ExcelAddInFileName/>
+
+        <!--          
+        Определяет суффикс, используемый для именования файла конкретной платформы, например, МойAddIn64.dna
+        Значение по умолчанию:
+            для 32 битной платформы — %none%
+            для 64 битной платформы — 64
         -->
         <ExcelDna32BitAddInSuffix Condition="'$(ExcelDna32BitAddInSuffix)' == ''">_x32</ExcelDna32BitAddInSuffix>
         <ExcelDna64BitAddInSuffix Condition="'$(ExcelDna64BitAddInSuffix)' == ''">_x64</ExcelDna64BitAddInSuffix>
     </PropertyGroup>
 
-    <PropertyGroup>
-        <!--
-          Включить/отключить использование Excel-DNA с проектами PackageReference (официально не поддерживается)
-        -->
-        <ExcelDnaAllowPackageReferenceProjectStyle Condition="'$(ExcelDnaAllowPackageReferenceProjectStyle)' == ''">false</ExcelDnaAllowPackageReferenceProjectStyle>
-    </PropertyGroup>
-
     <!--
-      Свойства конфигурации для упаковки файлов .dna
+    Свойства конфигурации для упаковки выходных файлов в один
     -->
     <PropertyGroup>
         <!--
-          Включить/отключить упаковку файлов .dna
+        Включить/отключить упаковку файлов .dna
         -->
         <RunExcelDnaPack Condition="'$(RunExcelDnaPack)' == ''">true</RunExcelDnaPack>
 
         <!--
-          Суффикс, используемый для упакованных файлов .xll, например, МойAddIn-packed.xll
+        Суффикс, используемый для упакованных файлов .xll, например, «-pack» создаст МойAddIn-pack.xll.
+        Если суффикс не нужен, то %none%
+        Значение по умолчанию: -packed          
         -->
-        <ExcelDnaPackXllSuffix Condition="'$(ExcelDnaPackXllSuffix)' == ''">-packed</ExcelDnaPackXllSuffix>
+        <ExcelDnaPackXllSuffix Condition="'$(ExcelDnaPackXllSuffix)' == ''">%none%</ExcelDnaPackXllSuffix>
+
+        <!-- 
+        Явные имена для упакованных файлов x86/x64.
+        Значение по умолчанию: не задано.
+        -->
+        <ExcelDnaPack32BitXllName/>
+        <ExcelDnaPack64BitXllName/>
+
+        <!-- 
+        Список зависимостей, включаемый .dna. Разделен точкой с запятой.
+        Значение по умолчанию: пусто
+            Примечание:
+                для .NET 6+ возьмет всё из .deps.json по умолчанию
+                для .NET Framework 4.x нужно добавить список зависимостей       
+        -->
+        <ExcelAddInInclude/>
+
+        <!-- 
+        Список зависимостей, указанных в .deps.json, исключаемый из упаковки. Разделен точкой с запятой.
+        Значение по умолчанию: пусто 
+        -->
+        <ExcelDnaPackExcludeDependencies/>
+
+        <!-- 
+        Включает упаковку управляемых сборок из .deps.json.
+        Значение по умолчанию: true 
+        -->
+        <ExcelDnaPackManagedDependencies/>
+
+        <!-- 
+        Включает упаковку нативных сборок из .deps.json.
+        Значение по умолчанию: true 
+        -->
+        <ExcelDnaPackNativeLibraryDependencies/>
+
+        <!-- 
+        Включает сжатие упакованного add-in 
+        Значение по умолчанию: true 
+        -->
+        <ExcelDnaPackCompressResources/>
+
+        <!-- 
+        Позволяет иметь .xll файл с неупакованными сборками
+        Значение по умолчанию: false
+        -->
+        <ExcelDnaUnpack/>
     </PropertyGroup>
+
+    <PropertyGroup>
+        <!--
+        Включить/отключить использование Excel-DNA с проектами PackageReference (официально не поддерживается)
+        -->
+        <ExcelDnaAllowPackageReferenceProjectStyle Condition="'$(ExcelDnaAllowPackageReferenceProjectStyle)' == ''">false</ExcelDnaAllowPackageReferenceProjectStyle>
+    </PropertyGroup>
+
+    <!-- GENERATED .DNA FILE SETTINGS -->
+    <PropertyGroup>
+        <!-- DnaLibrary Name in .dna. -->
+        <!-- Default value: $(ProjectName) Add-In -->
+        <ExcelAddInName></ExcelAddInName>
+
+        <!-- Prevents every static public function from becomming a UDF, they will need an explicit [ExcelFunction] annotation. -->
+        <!-- Default value: false -->
+        <ExcelAddInExplicitExports></ExcelAddInExplicitExports>
+
+        <!-- Prevents automatic registration of functions and commands - set this when using the ExcelDna.Registration extensions. -->
+        <!-- Default value: false -->
+        <ExcelAddInExplicitRegistration></ExcelAddInExplicitRegistration>
+
+        <!-- Enable/disable COM Server support. -->
+        <!-- Default value: false -->
+        <ExcelAddInComServer></ExcelAddInComServer>
+
+        <!-- Replace XLL version information with data read from ExternalLibrary assembly. -->
+        <!-- Default value: false -->
+        <ExcelAddInUseVersionAsOutputVersion></ExcelAddInUseVersionAsOutputVersion>
+
+        <!-- ExternalLibrary Path in .dna -->
+        <!-- Default value: $(TargetFileName) -->
+        <ExcelAddInExternalLibraryPath></ExcelAddInExternalLibraryPath>
+
+        <!-- Semicolon separated list of external libraries to include in .dna (in addition to the project output) -->
+        <!-- Default value: empty -->
+        <ExcelAddInExports></ExcelAddInExports>
+    </PropertyGroup>
+
+    <!-- ADDITIONAL TOOLS AND BUILD STEPS -->
+    <PropertyGroup>
+        <!-- Path to TlbExp.exe. E.g. "c:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.8 Tools\x64\TlbExp.exe" or $(MSBuildProjectDirectory)\TlbExp.exe.-->
+        <!-- Default value: empty -->
+        <ExcelAddInTlbExp></ExcelAddInTlbExp>
+
+        <!-- Enable/disable .tlb file creation. -->
+        <!-- Default value: false -->
+        <ExcelAddInTlbCreate></ExcelAddInTlbCreate>
+
+        <!-- Path to signtool.exe. E.g. "c:\Program Files\Microsoft SDKs\Windows\8.1\bin\x64\signtool.exe" or $(MSBuildProjectDirectory)\signtool.exe -->
+        <!-- Default value: empty -->
+        <ExcelAddInSignTool></ExcelAddInSignTool>
+
+        <!-- Options for signtool.exe. E.g. /f "$(MSBuildProjectDirectory)\Contoso.pfx" /p 12345678 -->
+        <!-- Default value: empty -->
+        <ExcelAddInSignOptions></ExcelAddInSignOptions>
+
+        <!-- ADVANCED OPTIONS -->
+
+        <!-- Enable/disable collectible AssemblyLoadContext for .NET 6. -->
+        <!-- Default value: false -->
+        <ExcelAddInDisableAssemblyContextUnload></ExcelAddInDisableAssemblyContextUnload>
+
+        <!-- Enables multithreaded add-in packing. -->
+        <!-- Default value: true -->
+        <ExcelDnaPackRunMultithreaded></ExcelDnaPackRunMultithreaded>
+
+        <!-- Enables cross-platform resource packing implementation when executing on Windows. -->
+        <!-- Default value: false -->
+        <ExcelDnaPackManagedResourcePackingOnWindows></ExcelDnaPackManagedResourcePackingOnWindows>
+
+        <!-- Enables removing .dna, .xll from the build output folder on Build Clean. -->
+        <!-- Default value: true -->
+        <RunExcelDnaClean></RunExcelDnaClean>
+
+        <!-- Enables copying .dna, .xll to the build output folder on Build.  -->
+        <!-- Default value: true -->
+        <RunExcelDnaBuild></RunExcelDnaBuild>
+    </PropertyGroup>
+
 </Project>
