@@ -1,9 +1,9 @@
 {
   "profiles": {
-    "Загрузить в Excel 2021 x64": {
+    "Р—Р°РіСЂСѓР·РёС‚СЊ РІ Excel 2021 x64": {
       "commandName": "Executable",
       "executablePath": "C:\\Program Files\\Microsoft Office\\root\\Office16\\EXCEL.EXE",
-      "commandLineArgs": "gmafffff.excel.udf_x64.xll"
+      "commandLineArgs": "$(MSBuildProjectDirectory)\\..\\sample\\sample.xlsm"
     }
   }
 }
