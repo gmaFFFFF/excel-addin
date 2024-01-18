@@ -60,6 +60,50 @@ public static class Функции {
 
     #endregion
 
+    #region Управляющие функции
+
+    #region Coalesce
+
+    private const string CoalИ = nameof(Coalesce);
+    private const string CoalО = "Возвращает первый из аргументов, не являющихся ошибкой или пустым";
+    private const string CoalАИ = "аргумент";
+    private const string CoalАО = "проверяемый аргумент";
+
+    [ExcelFunction(Name = CoalИ, Category = МояКатегория, Description = CoalО, IsThreadSafe = true)]
+    public static object Coalesce(
+        [ExcelArgument(Name = CoalАИ, Description = CoalАО)]
+        params object?[]? список) {
+        if (список is null)
+            return ExcelError.ExcelErrorNull;
+
+        Predicate<object> значимЛи = o =>
+            o is not ExcelError &&
+            o is not ExcelMissing &&
+            o is not ExcelEmpty &&
+            o is string s && !string.IsNullOrEmpty(s);
+
+        object рез = ExcelError.ExcelErrorNull;
+
+        foreach (var элем in список) {
+            if (элем is Array ar)
+                рез = (from object з in ar
+                        where значимЛи(з)
+                        select з)
+                    .FirstOrDefault(ExcelError.ExcelErrorNull);
+            else
+                рез = значимЛи(элем) ? элем : рез;
+
+            if (рез is not ExcelError)
+                return рез;
+        }
+
+        return рез;
+    }
+
+    #endregion
+
+    #endregion
+
     #region Http
 
     #region Get/Post
@@ -200,8 +244,7 @@ public static class Функции {
         [ExcelArgument(Name = JPJMАJsonТекстИ, Description = JPJMАJsonТекстО)]
         string jsonТекст,
         [ExcelArgument(Name = JИАИндексИ, Description = JИАИндексО)]
-        params string[] индексы)
-        => JsonКлиент.JsonКлиент.JsonИндекс(jsonТекст, индексы);
+        params string[] индексы) => JsonКлиент.JsonКлиент.JsonИндекс(jsonТекст, индексы);
 
     [ExcelFunction(Name = JPИ, Category = МояКатегория, Description = JPО, HelpTopic = JsonPathHelpUrl,
         IsThreadSafe = true)]
