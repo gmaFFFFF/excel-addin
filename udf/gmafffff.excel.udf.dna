@@ -31,6 +31,7 @@
     <Reference Path="JsonCons.Utilities.dll" Pack="true"/>
     <Reference Path="JsonCons.JmesPath.dll" Pack="true"/>
     <Reference Path="JsonCons.JsonPath.dll" Pack="true"/>
+    <Reference Path="System.Reactive.dll" Pack="true"/>
 
     <!--
         Excel-DNA также позволяет указать XML для расширений пользовательского интерфейса ленты в файле .dna.

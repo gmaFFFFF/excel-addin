@@ -15,7 +15,9 @@ public sealed class AddIn : IExcelAddIn {
             .AddParameterConversion((object[,] arr) => Массив2dОбъектовВМассив2dСтрок(arr))
             // Пара очень общих преобразований для типов Enum
             .AddReturnConversion((Enum value) => value.ToString(), true)
-            .AddParameterConversion(ParameterConversions.GetEnumStringConversion());
+            .AddParameterConversion(ParameterConversions.GetEnumStringConversion())
+            // Поддержка nullable типов
+            .AddNullableConversion();
 
     public void AutoOpen() {
         ExcelIntegration.RegisterUnhandledExceptionHandler(ex => $"!!! Ошибка: {ex}");

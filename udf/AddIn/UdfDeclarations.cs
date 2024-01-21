@@ -102,6 +102,82 @@ public static class Функции {
 
     #endregion
 
+    #region Скрыть строку/столбец
+
+    private const string ВидСтрИ = nameof(ОтобрСтр);
+    private const string ВидСтрО = "Скрывает/отображает строку в зависимости от значения параметра";
+    private const string ВидСтрПереклИ = "видимаЛи";
+    private const string ВидСтрПереклО = "Истина() — строка видна, Ложь() — строка скрыта";
+    private const string ВидСтрСсылкаИ = "ссылка";
+    private const string ВидСтрСсылкаО = "укажи строку";
+    private const string ВидСтрВысотаИ = "высота";
+
+    private const string ВидСтрВысотаО = "необязательная высота отображенной строки, " +
+                                         "соответствует высоте шрифта по умолчанию";
+
+    [ExcelFunction(Name = ВидСтрИ, Category = МояКатегория, Description = ВидСтрО, IsMacroType = true)]
+    public static object ОтобрСтр(
+        [ExcelArgument(Name = ВидСтрПереклИ, Description = ВидСтрПереклО)]
+        bool видимаЛи,
+        [ExcelArgument(Name = ВидСтрСсылкаИ, Description = ВидСтрСсылкаО, AllowReference = true)]
+        object парам,
+        [ExcelArgument(Name = ВидСтрВысотаИ, Description = ВидСтрВысотаО)]
+        double? высота = null
+    ) {
+        if (парам is not ExcelReference ссылка)
+            return ExcelError.ExcelErrorRef;
+
+        // UDF должны выполняться без побочных эффектов
+        // Данная функция нарушает данное правило, но делает это аккуратно (если это вообще возможно) —
+        // побочный эффект будет поставлен в очередь основного потока Excel, когда он будет готов
+        foreach (var стр in ExcelСтрока.Преобразовать(ссылка)) {
+            var команда = new ExcelКомандаВидимости(стр, видимаЛи, высота);
+            ExcelМенеджерФоновыхКоманд.ЗапланироватьКоманду(команда);
+        }
+
+        return видимаЛи;
+    }
+
+
+    private const string ВидСтлбИ = nameof(ОтобрСтлб);
+    private const string ВидСтлбО = "Скрывает/отображает столбец в зависимости от значения параметра";
+    private const string ВидСтлбПереклИ = "видимЛи";
+    private const string ВидСтлбПереклО = "Истина() — столбец виден, Ложь() — столбец скрыт";
+    private const string ВидСтлбСсылкаИ = "ссылка";
+    private const string ВидСтлбСсылкаО = "укажи столбец";
+    private const string ВидСтлбШиринаИ = "ширина";
+
+    private const string ВидСтлбШиринаО = "необязательная ширина отображенного столбца, " +
+                                          "соответствует ширине символа шрифта по умолчанию";
+
+    [ExcelFunction(Name = ВидСтлбИ, Category = МояКатегория, Description = ВидСтлбО, IsMacroType = true)]
+    public static object ОтобрСтлб(
+        [ExcelArgument(Name = ВидСтлбПереклИ, Description = ВидСтлбПереклО)]
+        bool видимЛи,
+        [ExcelArgument(Name = ВидСтлбСсылкаИ, Description = ВидСтлбСсылкаО, AllowReference = true)]
+        object парам,
+        [ExcelArgument(Name = ВидСтлбШиринаИ, Description = ВидСтлбШиринаО, AllowReference = true)]
+        double? ширина = null
+    ) {
+        // Предотвращает выполнение пока запущен мастер функций
+        if (ExcelDnaUtil.IsInFunctionWizard()) return "";
+
+        if (парам is not ExcelReference ссылка)
+            return ExcelError.ExcelErrorRef;
+
+        // UDF должны выполняться без побочных эффектов
+        // Данная функция нарушает данное правило, но делает это аккуратно (если это вообще возможно) —
+        // побочный эффект будет поставлен в очередь основного потока Excel, когда он будет готов
+        foreach (var стр in ExcelСтолбец.Преобразовать(ссылка)) {
+            var команда = new ExcelКомандаВидимости(стр, видимЛи, ширина);
+            ExcelМенеджерФоновыхКоманд.ЗапланироватьКоманду(команда);
+        }
+
+        return видимЛи;
+    }
+
+    #endregion
+
     #endregion
 
     #region Http
