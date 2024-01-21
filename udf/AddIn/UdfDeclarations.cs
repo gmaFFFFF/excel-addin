@@ -195,12 +195,12 @@ public static class Функции {
                                      $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.Заголовки2)} (содержимого); " +
                                      $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.Куки)}.\n";
 
-    private const string HGАктив_HPАктив_Предупреждение = "Внимание: " +
-                                                          "1)выполняется ОЧЕНЬ часто — при пересчете листа," +
-                                                          "2)кол-во символов в ячейке ограничено";
+    private const string HGPАктив_Предупреждение = "Внимание: " +
+                                                   "1)выполняется ОЧЕНЬ часто — при пересчете листа," +
+                                                   "2)кол-во символов в ячейке ограничено";
 
-    private const string HGАктивО = "Get " + HGPОобщее + HGАктив_HPАктив_Предупреждение;
-    private const string HPАктивО = "Post " + HGPОобщее + HGАктив_HPАктив_Предупреждение;
+    private const string HGАктивО = "Get " + HGPОобщее + HGPАктив_Предупреждение;
+    private const string HPАктивО = "Post " + HGPОобщее + HGPАктив_Предупреждение;
 
     private const string HGPААдресИ = "адрес";
     private const string HGPААдресО = "Url адрес, по которому необходимо сделать запрос";
@@ -280,6 +280,70 @@ public static class Функции {
             return ответ;
 
         return JsonКлиент.JsonКлиент.JsonPathНайди(ответ, jsonPath);
+    }
+
+    private const string HGifИ = nameof(HttpGet_if);
+    private const string HPifИ = nameof(HttpPost_if);
+
+    private const string HGPif_Предупреждение = "Внимание: " +
+                                                "1)Результат кешируется в самой ячейке — нельзя вкладывать в другую функцию," +
+                                                "2)кол-во символов в ячейке ограничено";
+
+    private const string HGifО = "Get " + HGPОобщее + HGPif_Предупреждение;
+    private const string HPifО = "Post " + HGPОобщее + HGPif_Предупреждение;
+    private const string HGPifПересчетИ = "повторитьЛи";
+    private const string HGPifПересчетО = "нужно ли повторно выполнить запрос или использовать кеш";
+
+    [ExcelAsyncFunction(Name = HGifИ, Category = МояКатегория, Description = HGifО, IsMacroType = true)]
+    public static async Task<string?> HttpGet_if(
+        [ExcelArgument(Name = HGPifПересчетИ, Description = HGPifПересчетО)]
+        bool повторитьЛи,
+        [ExcelArgument(Name = HGPААдресИ, Description = HGPААдресО)]
+        string адрес,
+        [ExcelArgument(Name = HGPАЗаголовкиИ, Description = HGPАЗаголовкиО)]
+        string[,]? заголовки = null,
+        [ExcelArgument(Name = HGPАЗаголовкиJИ, Description = HGPАЗаголовкиJО)]
+        string? заголовкиJson = null,
+        CancellationToken ct = default) {
+        // Предотвращает выполнение пока запущен мастер функций
+        if (ExcelDnaUtil.IsInFunctionWizard()) return "";
+
+        if (повторитьЛи || XlCall.Excel(XlCall.xlfCaller) is not ExcelReference вызванИз)
+            return await HttpGet_active(адрес, "$", заголовки, заголовкиJson, ct).ConfigureAwait(false) as string;
+
+        var value = вызванИз.GetValue();
+        if (value is (not ExcelError or ExcelMissing) and string old)
+            return await Task.FromResult(old);
+
+        return await HttpGet_active(адрес, "$", заголовки, заголовкиJson, ct).ConfigureAwait(false) as string;
+    }
+
+    [ExcelAsyncFunction(Name = HPifИ, Category = МояКатегория, Description = HPifО, IsMacroType = true)]
+    public static async Task<string?> HttpPost_if(
+        [ExcelArgument(Name = HGPifПересчетИ, Description = HGPifПересчетО)]
+        bool повторитьЛи,
+        [ExcelArgument(Name = HGPААдресИ, Description = HGPААдресО)]
+        string адрес,
+        [ExcelArgument(Name = HGPАЗаголовкиИ, Description = HGPАЗаголовкиО)]
+        string[,]? заголовки = null,
+        [ExcelArgument(Name = HGPАЗаголовкиJИ, Description = HGPАЗаголовкиJО)]
+        string? заголовкиJson = null,
+        [ExcelArgument(Name = HPАТелоИ, Description = HPАТелоО)]
+        string? телоJson = null,
+        CancellationToken ct = default) {
+        // Предотвращает выполнение пока запущен мастер функций
+        if (ExcelDnaUtil.IsInFunctionWizard()) return "";
+
+        if (повторитьЛи || XlCall.Excel(XlCall.xlfCaller) is not ExcelReference вызванИз)
+            return await HttpPost_active(адрес, "$", заголовки, заголовкиJson, телоJson, ct)
+                .ConfigureAwait(false) as string;
+
+        var value = вызванИз.GetValue();
+        if (value is (not ExcelError or ExcelMissing) and string old)
+            return await Task.FromResult(old);
+
+        return await HttpPost_active(адрес, "$", заголовки, заголовкиJson, телоJson, ct)
+            .ConfigureAwait(false) as string;
     }
 
     #endregion

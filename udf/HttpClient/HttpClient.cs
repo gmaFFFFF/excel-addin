@@ -97,7 +97,7 @@ public sealed class HttpКлиент {
 
         JsonDocument? ПопробоватьРазобратьJsonТекст(string jsonТекст) {
             try {
-                return JsonDocument.Parse(jsonТекст, new JsonDocumentOptions() { AllowTrailingCommas = true });
+                return JsonDocument.Parse(jsonТекст, new JsonDocumentOptions { AllowTrailingCommas = true });
             }
             catch {
                 return null;
@@ -124,9 +124,14 @@ public sealed class HttpКлиент {
         }
     }
 
-    public record ОтветHttp(HttpStatusCode Статус, HttpResponseHeaders? Заголовки, HttpContentHeaders? Заголовки2,
-        IEnumerable<string>? Куки, object? Содержимое, DateTime ДатаЗапроса) : IDisposable {
-        private bool _утилизированЛи = false;
+    public record ОтветHttp(
+        HttpStatusCode Статус,
+        HttpResponseHeaders? Заголовки,
+        HttpContentHeaders? Заголовки2,
+        IEnumerable<string>? Куки,
+        object? Содержимое,
+        DateTime ДатаЗапроса) : IDisposable {
+        private bool _утилизированЛи;
 
         public void Dispose() {
             if (_утилизированЛи)
