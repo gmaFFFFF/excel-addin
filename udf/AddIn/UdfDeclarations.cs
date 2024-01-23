@@ -188,8 +188,8 @@ public static class Функции {
     private const string HPАктивИ = nameof(HttpPost_active);
 
     private const string HGPОобщее = "запрос возвращает json с полями: " +
-                                     $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.ДатаЗапроса)}; " +
                                      $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.Статус)}; " +
+                                     $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.ДатаЗапроса)}; " +
                                      $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.Содержимое)}; " +
                                      $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.Заголовки)} (ответа); " +
                                      $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.Заголовки2)} (содержимого); " +
@@ -228,7 +228,7 @@ public static class Функции {
         [ExcelArgument(Name = HGPААдресИ, Description = HGPААдресО)]
         string адрес,
         [ExcelArgument(Name = HGPАJsonPathИ, Description = HGPАJsonPathО)]
-        string jsonPath = "$",
+        string? jsonPath = null,
         [ExcelArgument(Name = HGPАЗаголовкиИ, Description = HGPАЗаголовкиО)]
         string[,]? заголовки = null,
         [ExcelArgument(Name = HGPАЗаголовкиJИ, Description = HGPАЗаголовкиJО)]
@@ -256,7 +256,7 @@ public static class Функции {
         [ExcelArgument(Name = HGPААдресИ, Description = HGPААдресО)]
         string адрес,
         [ExcelArgument(Name = HGPАJsonPathИ, Description = HGPАJsonPathО)]
-        string jsonPath = "$",
+        string? jsonPath = null,
         [ExcelArgument(Name = HGPАЗаголовкиИ, Description = HGPАЗаголовкиО)]
         string[,]? заголовки = null,
         [ExcelArgument(Name = HGPАЗаголовкиJИ, Description = HGPАЗаголовкиJО)]
@@ -293,13 +293,19 @@ public static class Функции {
     private const string HPifО = "Post " + HGPОобщее + HGPif_Предупреждение;
     private const string HGPifПересчетИ = "повторитьЛи";
     private const string HGPifПересчетО = "нужно ли повторно выполнить запрос или использовать кеш";
+    private const string HGPifJmesPathИ = "JMESPath";
+    private const string HGPifJmesPathО = "Необязательный JMESPath позволяет выбрать нужный элемент из ответа.\n" +
+                                          "Подробнее о формате JMESPath по ссылке:\n" +
+                                          JmesPathHelpUrl;
 
     [ExcelAsyncFunction(Name = HGifИ, Category = МояКатегория, Description = HGifО, IsMacroType = true)]
-    public static async Task<string?> HttpGet_if(
+    public static async Task<string> HttpGet_if(
         [ExcelArgument(Name = HGPifПересчетИ, Description = HGPifПересчетО)]
         bool повторитьЛи,
         [ExcelArgument(Name = HGPААдресИ, Description = HGPААдресО)]
         string адрес,
+        [ExcelArgument(Name = HGPifJmesPathИ, Description = HGPifJmesPathО)]
+        string? jmesPath = null,
         [ExcelArgument(Name = HGPАЗаголовкиИ, Description = HGPАЗаголовкиО)]
         string[,]? заголовки = null,
         [ExcelArgument(Name = HGPАЗаголовкиJИ, Description = HGPАЗаголовкиJО)]
@@ -308,14 +314,23 @@ public static class Функции {
         // Предотвращает выполнение пока запущен мастер функций
         if (ExcelDnaUtil.IsInFunctionWizard()) return "";
 
+        var ЗапросиИВерниФунк = async () => {
+            var ответ = await HttpGet_active(адрес, null, заголовки, заголовкиJson, ct).ConfigureAwait(false) as string;
+            if (ответ is not { } str) return ExcelError.ExcelErrorNA.ToString();
+
+            return string.IsNullOrWhiteSpace(jmesPath)
+                ? str
+                : JsonКлиент.JsonКлиент.JmesPathИзмени(str, jmesPath).ToString() ?? ExcelError.ExcelErrorNA.ToString();
+        };
+
         if (повторитьЛи || XlCall.Excel(XlCall.xlfCaller) is not ExcelReference вызванИз)
-            return await HttpGet_active(адрес, "$", заголовки, заголовкиJson, ct).ConfigureAwait(false) as string;
+            return await ЗапросиИВерниФунк();
 
         var value = вызванИз.GetValue();
-        if (value is (not ExcelError or ExcelMissing) and string old)
+        if (value is (not ExcelError or ExcelMissing) and string old && !string.IsNullOrWhiteSpace(old))
             return await Task.FromResult(old);
 
-        return await HttpGet_active(адрес, "$", заголовки, заголовкиJson, ct).ConfigureAwait(false) as string;
+        return await ЗапросиИВерниФунк();
     }
 
     [ExcelAsyncFunction(Name = HPifИ, Category = МояКатегория, Description = HPifО, IsMacroType = true)]
@@ -324,6 +339,8 @@ public static class Функции {
         bool повторитьЛи,
         [ExcelArgument(Name = HGPААдресИ, Description = HGPААдресО)]
         string адрес,
+        [ExcelArgument(Name = HGPifJmesPathИ, Description = HGPifJmesPathО)]
+        string? jmesPath = null,
         [ExcelArgument(Name = HGPАЗаголовкиИ, Description = HGPАЗаголовкиО)]
         string[,]? заголовки = null,
         [ExcelArgument(Name = HGPАЗаголовкиJИ, Description = HGPАЗаголовкиJО)]
@@ -334,16 +351,25 @@ public static class Функции {
         // Предотвращает выполнение пока запущен мастер функций
         if (ExcelDnaUtil.IsInFunctionWizard()) return "";
 
+        var ЗапросиИВерниФунк = async () => {
+            var ответ =
+                await HttpPost_active(адрес, null, заголовки, заголовкиJson, телоJson, ct)
+                    .ConfigureAwait(false) as string;
+            if (ответ is not { } str) return ExcelError.ExcelErrorNA.ToString();
+
+            return string.IsNullOrWhiteSpace(jmesPath)
+                ? str
+                : JsonКлиент.JsonКлиент.JmesPathИзмени(str, jmesPath).ToString() ?? ExcelError.ExcelErrorNA.ToString();
+        };
+
         if (повторитьЛи || XlCall.Excel(XlCall.xlfCaller) is not ExcelReference вызванИз)
-            return await HttpPost_active(адрес, "$", заголовки, заголовкиJson, телоJson, ct)
-                .ConfigureAwait(false) as string;
+            return await ЗапросиИВерниФунк();
 
         var value = вызванИз.GetValue();
-        if (value is (not ExcelError or ExcelMissing) and string old)
+        if (value is (not ExcelError or ExcelMissing) and string old && !string.IsNullOrWhiteSpace(old))
             return await Task.FromResult(old);
 
-        return await HttpPost_active(адрес, "$", заголовки, заголовкиJson, телоJson, ct)
-            .ConfigureAwait(false) as string;
+        return await ЗапросиИВерниФунк();
     }
 
     #endregion

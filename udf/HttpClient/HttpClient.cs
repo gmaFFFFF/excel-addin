@@ -4,6 +4,7 @@ using System.Net.Mime;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace gmafffff.excel.udf.HttpКлиент;
 
@@ -11,10 +12,15 @@ namespace gmafffff.excel.udf.HttpКлиент;
 using ОбъектJson = Dictionary<string, JsonElement>;
 
 public sealed class HttpКлиент {
-    private static readonly HttpClient Клиент;
+    private static readonly HttpClient httpКлиент;
 
     static HttpКлиент() {
-        Клиент = new HttpClient();
+        var handler = new SocketsHttpHandler();
+        handler.PooledConnectionLifetime = TimeSpan.FromSeconds(60); //Как долго соединение может удерживаться открытым
+        handler.PooledConnectionIdleTimeout =
+            TimeSpan.FromSeconds(100); //Время бездействия, после которого соединение будет закрыто
+
+        httpКлиент = new HttpClient();
     }
 
     public static async Task<string?> GetАсинх(string адрес, string[,]? заголовкиСтр = null,
@@ -38,7 +44,7 @@ public sealed class HttpКлиент {
             return null;
 
         var jsonSerializerOptions = new JsonSerializerOptions {
-            WriteIndented = true,
+            WriteIndented = false,
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
         };
 
@@ -73,24 +79,24 @@ public sealed class HttpКлиент {
                 запросHttp.Headers.Add(название, значения);
             }
 
-            if (!string.IsNullOrWhiteSpace(заголовкиJson)) {
-                var заголовкиСписок =
-                    JsonSerializer.Deserialize<List<ОбъектJson>>(заголовкиJson, jsonSerializerOptions);
-                var допЗаголовки = from заголовокObj in заголовкиСписок
-                    from заголовок in заголовокObj
-                    let имя = заголовок.Key
-                    let парамм = заголовок.Value.ValueKind == JsonValueKind.Array
-                        ? заголовок.Value.EnumerateArray()
-                        : new[] { заголовок.Value }.AsEnumerable()
-                    let параммStr = парамм
-                        .Select(п => п.ValueKind == JsonValueKind.String
-                            ? п.GetString()
-                            : п.GetRawText())
-                    select (имя, параммStr);
+            if (string.IsNullOrWhiteSpace(заголовкиJson)) return запросHttp;
 
-                foreach (var (имя, параммStr) in допЗаголовки)
-                    запросHttp.Headers.Add(имя, параммStr);
-            }
+            var заголовкиСписок =
+                JsonSerializer.Deserialize<List<ОбъектJson>>(заголовкиJson, jsonSerializerOptions);
+            var допЗаголовки = from заголовокObj in заголовкиСписок
+                from заголовок in заголовокObj
+                let имя = заголовок.Key
+                let парамм = заголовок.Value.ValueKind == JsonValueKind.Array
+                    ? заголовок.Value.EnumerateArray()
+                    : new[] { заголовок.Value }.AsEnumerable()
+                let параммStr = парамм
+                    .Select(п => п.ValueKind == JsonValueKind.String
+                        ? п.GetString()
+                        : п.GetRawText())
+                select (имя, параммStr);
+
+            foreach (var (имя, параммStr) in допЗаголовки)
+                запросHttp.Headers.Add(имя, параммStr);
 
             return запросHttp;
         }
@@ -105,7 +111,7 @@ public sealed class HttpКлиент {
         }
 
         async Task<ОтветHttp> СформироватьОтвет() {
-            using var ответHttpСообщение = await Клиент.SendAsync(запрос, ct).ConfigureAwait(false);
+            using var ответHttpСообщение = await httpКлиент.SendAsync(запрос, ct).ConfigureAwait(false);
             var содержаниеStr = ответHttpСообщение is { IsSuccessStatusCode: true }
                 ? await ответHttpСообщение.Content.ReadAsStringAsync(ct).ConfigureAwait(false)
                 : null;
@@ -113,24 +119,22 @@ public sealed class HttpКлиент {
             var json = ПопробоватьРазобратьJsonТекст(содержаниеStr ?? "");
 
             return new ОтветHttp(ответHttpСообщение.StatusCode,
+                DateTime.Now,
+                (object?)json ?? содержаниеStr,
                 ответHttpСообщение.Headers,
                 ответHttpСообщение.Content.Headers,
-                ответHttpСообщение.Headers.TryGetValues("Set-Cookie", out var куки)
-                    ? куки
-                    : null,
-                (object?)json ?? содержаниеStr,
-                DateTime.Now
-            );
+                ответHttpСообщение.Headers.TryGetValues("Set-Cookie", out var куки) ? куки : null);
         }
     }
 
     public record ОтветHttp(
-        HttpStatusCode Статус,
-        HttpResponseHeaders? Заголовки,
+        [property: JsonPropertyName("status")] HttpStatusCode Статус,
+        [property: JsonPropertyName("date")] DateTime ДатаЗапроса,
+        [property: JsonPropertyName("result")] object? Содержимое,
+        [property: JsonPropertyName("header")] HttpResponseHeaders? Заголовки,
+        [property: JsonPropertyName("header2")]
         HttpContentHeaders? Заголовки2,
-        IEnumerable<string>? Куки,
-        object? Содержимое,
-        DateTime ДатаЗапроса) : IDisposable {
+        [property: JsonPropertyName("cookie")] IEnumerable<string>? Куки) : IDisposable {
         private bool _утилизированЛи;
 
         public void Dispose() {
