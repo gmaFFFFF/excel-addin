@@ -1,11 +1,21 @@
 using System.Text;
 using ExcelDna.Integration;
 using ExcelDna.Registration;
+using gmafffff.excel.udf.Excel.Команды;
+using gmafffff.excel.udf.Excel.Сетка;
 
 namespace gmafffff.excel.udf.AddIn;
 
-public static class Функции {
+public static class Функции
+{
     private const string МояКатегория = "Функции от gmaFFFFF";
+    private static readonly ИОчередьКоманд _очередьКоманд = new ОчередьКомандRx();
+
+    static Функции()
+    {
+        _очередьКоманд.ДобавитьКомпоновщикКоманд(typeof(ИзмениВидимостьРядаКоманда),
+            ИзмениВидимостьРядаКоманда.Упаковать);
+    }
 
     #region Форматирование текста
 
@@ -26,7 +36,8 @@ public static class Функции {
         [ExcelArgument(Name = РПАСуммаИ, Description = РПАСуммаО)]
         double сумма,
         [ExcelArgument(Name = РПАФорматИ, Description = РПAФорматО)]
-        string формат = "") {
+        string формат = "")
+    {
         return ДеньгиПрописью.ДеньгиПрописью.РублиПрописью(сумма, формат);
     }
 
@@ -48,8 +59,10 @@ public static class Функции {
         [ExcelArgument(Name = ОГАЧислоИ, Description = ОГАЧислоО)]
         double число,
         [ExcelArgument(Name = ОГАЗнаковИ, Description = ОГАЗнаковО)]
-        short знаков) {
-        return (знаков, Math.Pow(10, -знаков)) switch {
+        short знаков)
+    {
+        return (знаков, Math.Pow(10, -знаков)) switch
+        {
             (> 15, _) => Math.Round(число, 15, MidpointRounding.ToEven),
             (>= 0, _) => Math.Round(число, знаков, MidpointRounding.ToEven),
             (< 0, var степень) => Math.Round(число / степень, 0, MidpointRounding.ToEven) * степень
@@ -73,7 +86,9 @@ public static class Функции {
         string фио,
         [ExcelArgument(Name = СФиоАСлеваИ, Description = СФиоАСлеваО)]
         bool слева = false)
-        => ФИО.ФИО.СократитьФио(фио, слева);
+    {
+        return ФИО.ФИО.СократитьФио(фио, слева);
+    }
 
     #endregion
 
@@ -82,16 +97,20 @@ public static class Функции {
     #region Информация
 
     #region Информация о пользователе
+
     private const string ТПИ = nameof(ТекущийПользователь);
     private const string ТПО = "Доступная информация о текущем пользователе из ActiveDirectory";
-    
+
     [ExcelFunction(Name = ТПИ, Category = МояКатегория, Description = ТПО, IsThreadSafe = true)]
-    public static string ТекущийПользователь() => new User.User().Json();
+    public static string ТекущийПользователь()
+    {
+        return new User.User().Json();
+    }
 
     #endregion
 
     #endregion
-    
+
     #region Управляющие функции
 
     #region Coalesce
@@ -104,13 +123,15 @@ public static class Функции {
     [ExcelFunction(Name = CoalИ, Category = МояКатегория, Description = CoalО, IsThreadSafe = true)]
     public static object Coalesce(
         [ExcelArgument(Name = CoalАИ, Description = CoalАО)]
-        params object?[]? список) {
+        params object?[]? список)
+    {
         if (список is null)
             return ExcelError.ExcelErrorNull;
 
         object рез = ExcelError.ExcelErrorNull;
 
-        foreach (var элем in список) {
+        foreach (var элем in список)
+        {
             if (элем is Array ar)
                 рез = (from object з in ar
                         where ЗначимЛи(з)
@@ -125,8 +146,11 @@ public static class Функции {
 
         return рез;
 
-        bool ЗначимЛи(object? o) => o is not null && o is not ExcelError && o is not ExcelMissing &&
-                                    o is not ExcelEmpty && o is string s && !string.IsNullOrEmpty(s);
+        bool ЗначимЛи(object? o)
+        {
+            return o is not null && o is not ExcelError && o is not ExcelMissing &&
+                   o is not ExcelEmpty && o is string s && !string.IsNullOrEmpty(s);
+        }
     }
 
     #endregion
@@ -152,16 +176,18 @@ public static class Функции {
         object парам,
         [ExcelArgument(Name = ВидСтрВысотаИ, Description = ВидСтрВысотаО)]
         double? высота = null
-    ) {
+    )
+    {
         if (парам is not ExcelReference ссылка)
             return ExcelError.ExcelErrorRef;
 
         // UDF должны выполняться без побочных эффектов
         // Данная функция нарушает данное правило, но делает это аккуратно (если это вообще возможно) —
-        // побочный эффект будет поставлен в очередь основного потока Excel, когда он будет готов
-        foreach (var стр in ExcelСтрока.Преобразовать(ссылка)) {
-            var команда = new ExcelКомандаВидимости(стр, видимаЛи, высота);
-            ExcelМенеджерФоновыхКоманд.ЗапланироватьКоманду(команда);
+        // побочный эффект будет поставлен в очередь основного потока Excel, когда он будет свободен
+        foreach (var стр in ExcelСтрока.Преобразовать(ссылка))
+        {
+            var команда = new ИзмениВидимостьРядаКоманда(стр, видимаЛи, высота);
+            _очередьКоманд.ДобавитьКоманду(команда);
         }
 
         return видимаЛи;
@@ -187,7 +213,8 @@ public static class Функции {
         object парам,
         [ExcelArgument(Name = ВидСтлбШиринаИ, Description = ВидСтлбШиринаО, AllowReference = true)]
         double? ширина = null
-    ) {
+    )
+    {
         // Предотвращает выполнение пока запущен мастер функций
         if (ExcelDnaUtil.IsInFunctionWizard()) return "";
 
@@ -197,9 +224,10 @@ public static class Функции {
         // UDF должны выполняться без побочных эффектов
         // Данная функция нарушает данное правило, но делает это аккуратно (если это вообще возможно) —
         // побочный эффект будет поставлен в очередь основного потока Excel, когда он будет готов
-        foreach (var стр in ExcelСтолбец.Преобразовать(ссылка)) {
-            var команда = new ExcelКомандаВидимости(стр, видимЛи, ширина);
-            ExcelМенеджерФоновыхКоманд.ЗапланироватьКоманду(команда);
+        foreach (var стр in ExcelСтолбец.Преобразовать(ссылка))
+        {
+            var команда = new ИзмениВидимостьРядаКоманда(стр, видимЛи, ширина);
+            _очередьКоманд.ДобавитьКоманду(команда);
         }
 
         return видимЛи;
@@ -262,7 +290,8 @@ public static class Функции {
         string[,]? заголовки = null,
         [ExcelArgument(Name = HGPАЗаголовкиJИ, Description = HGPАЗаголовкиJО)]
         string? заголовкиJson = null,
-        CancellationToken ct = default) {
+        CancellationToken ct = default)
+    {
         // Предотвращает выполнение пока запущен мастер функций
         if (ExcelDnaUtil.IsInFunctionWizard()) return "";
 
@@ -292,7 +321,8 @@ public static class Функции {
         string? заголовкиJson = null,
         [ExcelArgument(Name = HPАТелоИ, Description = HPАТелоО)]
         string? телоJson = null,
-        CancellationToken ct = default) {
+        CancellationToken ct = default)
+    {
         // Предотвращает выполнение пока запущен мастер функций
         if (ExcelDnaUtil.IsInFunctionWizard()) return "";
 
@@ -340,11 +370,13 @@ public static class Функции {
         string[,]? заголовки = null,
         [ExcelArgument(Name = HGPАЗаголовкиJИ, Description = HGPАЗаголовкиJО)]
         string? заголовкиJson = null,
-        CancellationToken ct = default) {
+        CancellationToken ct = default)
+    {
         // Предотвращает выполнение пока запущен мастер функций
         if (ExcelDnaUtil.IsInFunctionWizard()) return "";
 
-        var запросиИВерниФунк = async () => {
+        var запросиИВерниФунк = async () =>
+        {
             var ответ = await HttpGet_active(адрес, null, заголовки, заголовкиJson, ct).ConfigureAwait(false) as string;
             if (ответ is not { } str) return ExcelError.ExcelErrorNA.ToString();
 
@@ -377,11 +409,13 @@ public static class Функции {
         string? заголовкиJson = null,
         [ExcelArgument(Name = HPАТелоИ, Description = HPАТелоО)]
         string? телоJson = null,
-        CancellationToken ct = default) {
+        CancellationToken ct = default)
+    {
         // Предотвращает выполнение пока запущен мастер функций
         if (ExcelDnaUtil.IsInFunctionWizard()) return "";
 
-        var запросиИВерниФунк = async () => {
+        var запросиИВерниФунк = async () =>
+        {
             var ответ =
                 await HttpPost_active(адрес, null, заголовки, заголовкиJson, телоJson, ct)
                     .ConfigureAwait(false) as string;
@@ -440,8 +474,10 @@ public static class Функции {
         [ExcelArgument(Name = JPJMАJsonТекстИ, Description = JPJMАJsonТекстО)]
         string jsonТекст,
         [ExcelArgument(Name = JИАИндексИ, Description = JИАИндексО)]
-        params string[] индексы) 
-            => JsonКлиент.JsonКлиент.JsonИндекс(jsonТекст, индексы);
+        params string[] индексы)
+    {
+        return JsonКлиент.JsonКлиент.JsonИндекс(jsonТекст, индексы);
+    }
 
     [ExcelFunction(Name = JPИ, Category = МояКатегория, Description = JPО, HelpTopic = JsonPathHelpUrl,
         IsThreadSafe = true)]
@@ -449,7 +485,8 @@ public static class Функции {
         [ExcelArgument(Name = JPJMАJsonТекстИ, Description = JPJMАJsonТекстО)]
         string jsonТекст,
         [ExcelArgument(Name = JPАJsonPathИ, Description = JPАJsonPathО)]
-        string jsonPath) {
+        string jsonPath)
+    {
         return JsonКлиент.JsonКлиент.JsonPathНайди(jsonТекст, jsonPath);
     }
 
@@ -459,7 +496,8 @@ public static class Функции {
         [ExcelArgument(Name = JPJMАJsonТекстИ, Description = JPJMАJsonТекстО)]
         string jsonТекст,
         [ExcelArgument(Name = JmPАJsonPathИ, Description = JmPАJsonPathО)]
-        string jmesPath) {
+        string jmesPath)
+    {
         return JsonКлиент.JsonКлиент.JmesPathИзмени(jsonТекст, jmesPath);
     }
 
@@ -483,7 +521,8 @@ public static class Функции {
     [ExcelFunction(Name = B64КИ, Category = МояКатегория, Description = B64КО, IsThreadSafe = true)]
     public static string Base64Кодировать(
         [ExcelArgument(Name = B64КАТекстИ, Description = B64КАТекстО)]
-        string текст) {
+        string текст)
+    {
         var байты = Encoding.UTF8.GetBytes(текст);
         return Convert.ToBase64String(байты);
     }
@@ -491,7 +530,8 @@ public static class Функции {
     [ExcelFunction(Name = B64ДИ, Category = МояКатегория, Description = B64ДО, IsThreadSafe = true)]
     public static string Base64Декодировать(
         [ExcelArgument(Name = B64ДАbase64ТекстИ, Description = B64ДАbase64ТекстО)]
-        string base64Текст) {
+        string base64Текст)
+    {
         var байты = Convert.FromBase64String(base64Текст);
         return Encoding.UTF8.GetString(байты);
     }
