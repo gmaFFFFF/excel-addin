@@ -4,6 +4,10 @@
       "commandName": "Executable",
       "executablePath": "C:\\Program Files\\Microsoft Office\\root\\Office16\\EXCEL.EXE",
       "commandLineArgs": "$(MSBuildProjectDirectory)\\..\\sample\\sample.xlsm"
+    },
+    "Отладка в Excel 2021 x64": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Program Files\\Microsoft Office\\root\\Office16\\EXCEL.EXE"
     }
   }
 }

@@ -5,7 +5,7 @@ using ExcelDna.Registration;
 namespace gmafffff.excel.udf.AddIn;
 
 public sealed class AddIn : IExcelAddIn {
-    private static ParameterConversionConfiguration автоПриведениеТиповКонфиг
+    private static ParameterConversionConfiguration АвтоПриведениеТиповКонфиг
         => new ParameterConversionConfiguration()
             // Добавляет поддержку параметров string[] (вместо этого принимается object[]).
             // Использует служебный класс TypeConversion, определенный в ExcelDna.Registration, 
@@ -18,7 +18,6 @@ public sealed class AddIn : IExcelAddIn {
             .AddParameterConversion(ParameterConversions.GetEnumStringConversion())
             // Поддержка nullable типов
             .AddNullableConversion();
-
     public void AutoOpen() {
         ExcelIntegration.RegisterUnhandledExceptionHandler(ex => $"!!! Ошибка: {ex}");
         РегистрироватьФункции();
@@ -33,11 +32,11 @@ public sealed class AddIn : IExcelAddIn {
     private static void РегистрироватьФункции() {
         ExcelRegistration.GetExcelFunctions()
             .ProcessMapArrayFunctions()
-            .ProcessParameterConversions(автоПриведениеТиповКонфиг)
+            .ProcessParameterConversions(АвтоПриведениеТиповКонфиг)
             // Преимущество встроенной поддержки асинхронных функций (nativeAsyncIfAvailable):
             //   — пока функция вычисляется в ячейке будет отображаться #ВЫЧИСЛ! вместо #Н/Д
             // Недостатки встроенной поддержки асинхронных функций:
-            //   — требуется два раза нажать Enter, чтобы продолжить ввод даных;
+            //   — требуется два раза нажать Enter, чтобы продолжить ввод данных;
             //   — субъективно работает медленнее.
             .ProcessAsyncRegistrations(nativeAsyncIfAvailable: false)
             .ProcessParamsRegistrations()

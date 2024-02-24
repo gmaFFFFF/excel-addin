@@ -76,28 +76,25 @@ public static class Функции {
         if (список is null)
             return ExcelError.ExcelErrorNull;
 
-        Predicate<object> значимЛи = o =>
-            o is not ExcelError &&
-            o is not ExcelMissing &&
-            o is not ExcelEmpty &&
-            o is string s && !string.IsNullOrEmpty(s);
-
         object рез = ExcelError.ExcelErrorNull;
 
         foreach (var элем in список) {
             if (элем is Array ar)
                 рез = (from object з in ar
-                        where значимЛи(з)
+                        where ЗначимЛи(з)
                         select з)
                     .FirstOrDefault(ExcelError.ExcelErrorNull);
             else
-                рез = значимЛи(элем) ? элем : рез;
+                рез = ЗначимЛи(элем) ? элем : рез;
 
             if (рез is not ExcelError)
-                return рез;
+                return рез!;
         }
 
         return рез;
+
+        bool ЗначимЛи(object? o) => o is not null && o is not ExcelError && o is not ExcelMissing &&
+                                    o is not ExcelEmpty && o is string s && !string.IsNullOrEmpty(s);
     }
 
     #endregion
@@ -294,6 +291,7 @@ public static class Функции {
     private const string HGPifПересчетИ = "повторитьЛи";
     private const string HGPifПересчетО = "нужно ли повторно выполнить запрос или использовать кеш";
     private const string HGPifJmesPathИ = "JMESPath";
+
     private const string HGPifJmesPathО = "Необязательный JMESPath позволяет выбрать нужный элемент из ответа.\n" +
                                           "Подробнее о формате JMESPath по ссылке:\n" +
                                           JmesPathHelpUrl;
@@ -314,7 +312,7 @@ public static class Функции {
         // Предотвращает выполнение пока запущен мастер функций
         if (ExcelDnaUtil.IsInFunctionWizard()) return "";
 
-        var ЗапросиИВерниФунк = async () => {
+        var запросиИВерниФунк = async () => {
             var ответ = await HttpGet_active(адрес, null, заголовки, заголовкиJson, ct).ConfigureAwait(false) as string;
             if (ответ is not { } str) return ExcelError.ExcelErrorNA.ToString();
 
@@ -324,13 +322,13 @@ public static class Функции {
         };
 
         if (повторитьЛи || XlCall.Excel(XlCall.xlfCaller) is not ExcelReference вызванИз)
-            return await ЗапросиИВерниФунк();
+            return await запросиИВерниФунк();
 
         var value = вызванИз.GetValue();
         if (value is (not ExcelError or ExcelMissing) and string old && !string.IsNullOrWhiteSpace(old))
             return await Task.FromResult(old);
 
-        return await ЗапросиИВерниФунк();
+        return await запросиИВерниФунк();
     }
 
     [ExcelAsyncFunction(Name = HPifИ, Category = МояКатегория, Description = HPifО, IsMacroType = true)]
@@ -351,7 +349,7 @@ public static class Функции {
         // Предотвращает выполнение пока запущен мастер функций
         if (ExcelDnaUtil.IsInFunctionWizard()) return "";
 
-        var ЗапросиИВерниФунк = async () => {
+        var запросиИВерниФунк = async () => {
             var ответ =
                 await HttpPost_active(адрес, null, заголовки, заголовкиJson, телоJson, ct)
                     .ConfigureAwait(false) as string;
@@ -363,13 +361,13 @@ public static class Функции {
         };
 
         if (повторитьЛи || XlCall.Excel(XlCall.xlfCaller) is not ExcelReference вызванИз)
-            return await ЗапросиИВерниФунк();
+            return await запросиИВерниФунк();
 
         var value = вызванИз.GetValue();
         if (value is (not ExcelError or ExcelMissing) and string old && !string.IsNullOrWhiteSpace(old))
             return await Task.FromResult(old);
 
-        return await ЗапросиИВерниФунк();
+        return await запросиИВерниФунк();
     }
 
     #endregion
@@ -410,7 +408,8 @@ public static class Функции {
         [ExcelArgument(Name = JPJMАJsonТекстИ, Description = JPJMАJsonТекстО)]
         string jsonТекст,
         [ExcelArgument(Name = JИАИндексИ, Description = JИАИндексО)]
-        params string[] индексы) => JsonКлиент.JsonКлиент.JsonИндекс(jsonТекст, индексы);
+        params string[] индексы) 
+            => JsonКлиент.JsonКлиент.JsonИндекс(jsonТекст, индексы);
 
     [ExcelFunction(Name = JPИ, Category = МояКатегория, Description = JPО, HelpTopic = JsonPathHelpUrl,
         IsThreadSafe = true)]
