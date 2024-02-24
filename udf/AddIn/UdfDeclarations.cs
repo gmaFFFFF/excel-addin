@@ -58,6 +58,25 @@ public static class Функции {
 
     #endregion
 
+    #region Сократить фамилию
+
+    private const string СФиоИ = nameof(СократитьФио);
+    private const string СФиоО = "Сокращает полные Фамилия Имя Отчество до ФИО";
+    private const string СФиоАФиоИ = "ФИО";
+    private const string СФиоАФиоО = "сокращаемая Фамилия Имя Отчество";
+    private const string СФиоАСлеваИ = "слева";
+    private const string СФиоАСлеваО = "инициалы слева?";
+
+    [ExcelFunction(Name = СФиоИ, Category = МояКатегория, Description = СФиоО, IsThreadSafe = true)]
+    public static string СократитьФио(
+        [ExcelArgument(Name = СФиоАФиоИ, Description = СФиоАФиоО)]
+        string фио,
+        [ExcelArgument(Name = СФиоАСлеваИ, Description = СФиоАСлеваО)]
+        bool слева = false)
+        => ФИО.ФИО.СократитьФио(фио, слева);
+
+    #endregion
+
     #endregion
 
     #region Управляющие функции
