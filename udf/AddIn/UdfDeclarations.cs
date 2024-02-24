@@ -79,6 +79,19 @@ public static class Функции {
 
     #endregion
 
+    #region Информация
+
+    #region Информация о пользователе
+    private const string ТПИ = nameof(ТекущийПользователь);
+    private const string ТПО = "Доступная информация о текущем пользователе из ActiveDirectory";
+    
+    [ExcelFunction(Name = ТПИ, Category = МояКатегория, Description = ТПО, IsThreadSafe = true)]
+    public static string ТекущийПользователь() => new User.User().Json();
+
+    #endregion
+
+    #endregion
+    
     #region Управляющие функции
 
     #region Coalesce

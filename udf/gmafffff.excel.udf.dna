@@ -34,6 +34,15 @@
     <Reference Path="System.Reactive.dll" Pack="true"/>
 
     <!--
+        Упаковка не работает. Приходится прикладывать файлы
+    -->
+    <Reference Path="System.Configuration.ConfigurationManager.dll" Pack="true"/>
+    <Reference Path="System.Security.Cryptography.ProtectedData.dll" Pack="true"/>
+    <Reference Path="System.DirectoryServices.dll" Pack="true"/>
+    <Reference Path="System.DirectoryServices.Protocols.dll" Pack="true"/>
+    <Reference Path="System.DirectoryServices.AccountManagement.dll" Pack="true"/>
+
+    <!--
         Excel-DNA также позволяет указать XML для расширений пользовательского интерфейса ленты в файле .dna.
         См. сайт Excel-DNA по адресу https://excel-dna.net для загрузки полного дистрибутива.
     -->

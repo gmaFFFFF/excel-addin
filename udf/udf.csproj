@@ -20,6 +20,7 @@
         <PackageReference Include="ExcelDna.IntelliSense" Version="1.7.0" />
         <PackageReference Include="ExcelDna.Registration" Version="1.7.0" />
         <PackageReference Include="JsonCons.JsonPath" Version="1.1.0" />
+        <PackageReference Include="System.DirectoryServices.AccountManagement" Version="8.0.0" />
         <PackageReference Include="System.Reactive" Version="6.0.0" />
     </ItemGroup>
 
