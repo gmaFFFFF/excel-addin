@@ -2,92 +2,96 @@ using System.Text.Json;
 using JsonCons.JmesPath;
 using JsonCons.JsonPath;
 
-namespace gmafffff.excel.udf.JsonКлиент;
+namespace gmafffff.excel.udf.JsonРљР»РёРµРЅС‚;
 
-public sealed class JsonКлиент {
-    private static readonly JsonDocumentOptions JsonДокНастр = new() { AllowTrailingCommas = true };
+public sealed class JsonРљР»РёРµРЅС‚ {
+    private static readonly JsonDocumentOptions JsonР”РѕРєРќР°СЃС‚СЂ = new() { AllowTrailingCommas = true };
+
+    private static readonly JsonSerializerOptions РќР°СЃС‚СЂРѕР№РєРёРЎРѕС…СЂР°РЅРµРЅРёСЏ = new() {
+        WriteIndented = false, AllowTrailingCommas = true,
+        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
+
 
     /// <summary>
-    ///     Находит элемент по JSONPath
+    ///     РќР°С…РѕРґРёС‚ СЌР»РµРјРµРЅС‚ РїРѕ JSONPath
     /// </summary>
-    /// <param name="jsonТекст">Текст в формате JSON</param>
-    /// <param name="запрос">
-    ///     Запрос в формате JSONPath.
-    ///     Подробнее о формате JSONPath по
-    ///     <a href="https://danielaparker.github.io/JsonCons.Net/articles/JsonPath/JsonConsJsonPath.html">ссылке</a>
+    /// <param name="jsonРўРµРєСЃС‚">РўРµРєСЃС‚ РІ С„РѕСЂРјР°С‚Рµ JSON</param>
+    /// <param name="Р·Р°РїСЂРѕСЃ">
+    ///     Р—Р°РїСЂРѕСЃ РІ С„РѕСЂРјР°С‚Рµ JSONPath.
+    ///     РџРѕРґСЂРѕР±РЅРµРµ Рѕ С„РѕСЂРјР°С‚Рµ JSONPath РїРѕ
+    ///     <a href="https://danielaparker.github.io/JsonCons.Net/articles/JsonPath/JsonConsJsonPath.html">СЃСЃС‹Р»РєРµ</a>
     /// </param>
-    /// <returns>Значение единичного элемента или строку JSON</returns>
-    public static object JsonPathНайди(string jsonТекст, string запрос) {
-        if (string.IsNullOrWhiteSpace(jsonТекст) || string.IsNullOrWhiteSpace(запрос))
+    /// <returns>Р—РЅР°С‡РµРЅРёРµ РµРґРёРЅРёС‡РЅРѕРіРѕ СЌР»РµРјРµРЅС‚Р° РёР»Рё СЃС‚СЂРѕРєСѓ JSON</returns>
+    public static object JsonPathРќР°Р№РґРё(string jsonРўРµРєСЃС‚, string Р·Р°РїСЂРѕСЃ) {
+        if (string.IsNullOrWhiteSpace(jsonРўРµРєСЃС‚) || string.IsNullOrWhiteSpace(Р·Р°РїСЂРѕСЃ))
             return "";
 
-        var настройкиПоиска = JsonSelectorOptions.Default;
-        настройкиПоиска.ExecutionMode = PathExecutionMode.Parallel;
+        var РЅР°СЃС‚СЂРѕР№РєРёРџРѕРёСЃРєР° = JsonSelectorOptions.Default;
+        РЅР°СЃС‚СЂРѕР№РєРёРџРѕРёСЃРєР°.ExecutionMode = PathExecutionMode.Parallel;
 
-        using var json = JsonDocument.Parse(jsonТекст, JsonДокНастр);
+        using var json = JsonDocument.Parse(jsonРўРµРєСЃС‚, JsonР”РѕРєРќР°СЃС‚СЂ);
 
-        var найдено = JsonSelector.Select(json.RootElement, запрос, настройкиПоиска);
+        var РЅР°Р№РґРµРЅРѕ = JsonSelector.Select(json.RootElement, Р·Р°РїСЂРѕСЃ, РЅР°СЃС‚СЂРѕР№РєРёРџРѕРёСЃРєР°);
 
-        return ПреобразоватьJsonВСтроку(найдено);
+        return РџСЂРµРѕР±СЂР°Р·РѕРІР°С‚СЊJsonР’РЎС‚СЂРѕРєСѓ(РЅР°Р№РґРµРЅРѕ);
     }
 
-    public static object JmesPathИзмени(string jsonТекст, string запрос) {
-        if (string.IsNullOrWhiteSpace(jsonТекст) || string.IsNullOrWhiteSpace(запрос))
+    public static object JmesPathРР·РјРµРЅРё(string jsonРўРµРєСЃС‚, string Р·Р°РїСЂРѕСЃ) {
+        if (string.IsNullOrWhiteSpace(jsonРўРµРєСЃС‚) || string.IsNullOrWhiteSpace(Р·Р°РїСЂРѕСЃ))
             return "";
 
-        var настройкиПоиска = JsonSelectorOptions.Default;
-        настройкиПоиска.ExecutionMode = PathExecutionMode.Parallel;
+        var РЅР°СЃС‚СЂРѕР№РєРёРџРѕРёСЃРєР° = JsonSelectorOptions.Default;
+        РЅР°СЃС‚СЂРѕР№РєРёРџРѕРёСЃРєР°.ExecutionMode = PathExecutionMode.Parallel;
 
 
-        using var json = JsonDocument.Parse(jsonТекст, JsonДокНастр);
+        using var json = JsonDocument.Parse(jsonРўРµРєСЃС‚, JsonР”РѕРєРќР°СЃС‚СЂ);
 
-        var найдено = JsonTransformer.Transform(json.RootElement, запрос);
+        var РЅР°Р№РґРµРЅРѕ = JsonTransformer.Transform(json.RootElement, Р·Р°РїСЂРѕСЃ);
 
-        var элем = найдено is not null
-            ? new[] { найдено.RootElement }
+        var СЌР»РµРј = РЅР°Р№РґРµРЅРѕ is not null
+            ? new[] { РЅР°Р№РґРµРЅРѕ.RootElement }
             : Array.Empty<JsonElement>();
 
-        return ПреобразоватьJsonВСтроку(элем);
+        return РџСЂРµРѕР±СЂР°Р·РѕРІР°С‚СЊJsonР’РЎС‚СЂРѕРєСѓ(СЌР»РµРј);
     }
 
-    public static object JsonИндекс(string jsonТекст, params string[] индексы) {
-        var обработать = (string i) => int.TryParse(i, out _) ? $"[{i}]" : $"['{i}']";
-        var запрос = "$" + string.Concat(индексы.Select(i => обработать(i)));
-        return JsonPathНайди(jsonТекст, запрос);
+    public static object JsonРРЅРґРµРєСЃ(string jsonРўРµРєСЃС‚, params string[] РёРЅРґРµРєСЃС‹) {
+        var РѕР±СЂР°Р±РѕС‚Р°С‚СЊ = (string i) => int.TryParse(i, out _) ? $"[{i}]" : $"['{i}']";
+        var Р·Р°РїСЂРѕСЃ = "$" + string.Concat(РёРЅРґРµРєСЃС‹.Select(i => РѕР±СЂР°Р±РѕС‚Р°С‚СЊ(i)));
+        return JsonPathРќР°Р№РґРё(jsonРўРµРєСЃС‚, Р·Р°РїСЂРѕСЃ);
     }
 
-    private static object ПреобразоватьJsonВСтроку(IList<JsonElement> найдено) {
-        var настройкиСохран = new JsonSerializerOptions { WriteIndented = true, AllowTrailingCommas = true };
+    private static object РџСЂРµРѕР±СЂР°Р·РѕРІР°С‚СЊJsonР’РЎС‚СЂРѕРєСѓ(IList<JsonElement> РЅР°Р№РґРµРЅРѕ) {
 
-        return найдено.Count switch {
+        return РЅР°Р№РґРµРЅРѕ.Count switch {
             0 => "",
-            1 => ПопробуйТипизироватьЭлементJson(найдено[0], настройкиСохран),
-            _ => JsonSerializer.Serialize(найдено, настройкиСохран)
+            1 => РџРѕРїСЂРѕР±СѓР№РўРёРїРёР·РёСЂРѕРІР°С‚СЊР­Р»РµРјРµРЅС‚Json(РЅР°Р№РґРµРЅРѕ[0]),
+            _ => JsonSerializer.Serialize(РЅР°Р№РґРµРЅРѕ, РќР°СЃС‚СЂРѕР№РєРёРЎРѕС…СЂР°РЅРµРЅРёСЏ)
         };
     }
 
-    private static object ПопробуйТипизироватьЭлементJson(JsonElement элемент, JsonSerializerOptions? настройкиСохран) {
-        return элемент.ValueKind switch {
+    private static object РџРѕРїСЂРѕР±СѓР№РўРёРїРёР·РёСЂРѕРІР°С‚СЊР­Р»РµРјРµРЅС‚Json(JsonElement СЌР»РµРјРµРЅС‚) {
+        return СЌР»РµРјРµРЅС‚.ValueKind switch {
             JsonValueKind.True => true,
             JsonValueKind.False => false,
             JsonValueKind.Null => "",
-            JsonValueKind.Number => ПопробуйТипизироватьЭлементJsonКакЧисло(элемент, настройкиСохран),
-            JsonValueKind.String => элемент.TryGetDateTime(out var дата)
-                ? дата
-                : элемент.GetString(),
-            _ => JsonSerializer.Serialize(элемент, настройкиСохран)
+            JsonValueKind.Number => РџРѕРїСЂРѕР±СѓР№РўРёРїРёР·РёСЂРѕРІР°С‚СЊР­Р»РµРјРµРЅС‚JsonРљР°РєР§РёСЃР»Рѕ(СЌР»РµРјРµРЅС‚),
+            JsonValueKind.String => СЌР»РµРјРµРЅС‚.TryGetDateTime(out var РґР°С‚Р°)
+                ? РґР°С‚Р°
+                : СЌР»РµРјРµРЅС‚.GetString(),
+            _ => JsonSerializer.Serialize(СЌР»РµРјРµРЅС‚, РќР°СЃС‚СЂРѕР№РєРёРЎРѕС…СЂР°РЅРµРЅРёСЏ)
         } ?? "";
     }
 
-    private static object ПопробуйТипизироватьЭлементJsonКакЧисло(JsonElement элемент,
-        JsonSerializerOptions? настройкиСохран) {
-        if (элемент.TryGetInt64(out var целое))
-            return целое;
-        if (элемент.TryGetDecimal(out var дес))
-            return дес;
-        if (элемент.TryGetDouble(out var вещ))
-            return вещ;
+    private static object РџРѕРїСЂРѕР±СѓР№РўРёРїРёР·РёСЂРѕРІР°С‚СЊР­Р»РµРјРµРЅС‚JsonРљР°РєР§РёСЃР»Рѕ(JsonElement СЌР»РµРјРµРЅС‚) {
+        if (СЌР»РµРјРµРЅС‚.TryGetInt64(out var С†РµР»РѕРµ))
+            return С†РµР»РѕРµ;
+        if (СЌР»РµРјРµРЅС‚.TryGetDecimal(out var РґРµСЃ))
+            return РґРµСЃ;
+        if (СЌР»РµРјРµРЅС‚.TryGetDouble(out var РІРµС‰))
+            return РІРµС‰;
 
-        return JsonSerializer.Serialize(элемент, настройкиСохран);
+        return JsonSerializer.Serialize(СЌР»РµРјРµРЅС‚, РќР°СЃС‚СЂРѕР№РєРёРЎРѕС…СЂР°РЅРµРЅРёСЏ);
     }
 }
