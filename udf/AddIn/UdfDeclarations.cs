@@ -168,6 +168,26 @@ public static class Функции{
 
     #endregion
 
+    #region Файловые функции
+
+    #region Проверка существования файла
+
+    private const string ФайлСущЛиИ = nameof(ФайлСуществуетЛи);
+    private const string ФайлСущЛиО = "Проверяет существование файла";
+    private const string ФайлСущЛиПутьИ = "путь";
+    private const string ФайлСущЛиПутьО = "путь к файлу";
+
+    [ExcelFunction(Name = ФайлСущЛиИ, Category = МояКатегория, Description = ФайлСущЛиО, IsThreadSafe = true)]
+    public static bool ФайлСуществуетЛи(
+        [ExcelArgument(Name = ФайлСущЛиПутьИ, Description = ФайлСущЛиПутьО)]
+        string path){
+        return File.Exists(path);
+    }
+
+    #endregion
+
+    #endregion
+
     #region Управляющие функции
 
     #region Coalesce
