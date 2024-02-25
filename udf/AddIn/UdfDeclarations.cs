@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Globalization;
 using System.Text;
 using ExcelDna.Integration;
@@ -17,28 +18,29 @@ public static class Функции{
     }
 
     #region Служебные
- 
-    private static bool ЗначимЛиАргументUdf(object? o) =>
-        o is not null && o is not ExcelError && o is not ExcelMissing &&
-        o is not ExcelEmpty && o is string s && !string.IsNullOrEmpty(s);
-    
-    
+
+    private static bool ЗначимЛиАргументUdf(object? o){
+        return o is not null && o is not ExcelError && o is not ExcelMissing &&
+               o is not ExcelEmpty && o is string s && !string.IsNullOrEmpty(s);
+    }
+
+
     private static IEnumerable<object?> FlattenUdfArgument(object?[]? список){
         if (список is null) yield break;
-        foreach (var элем in список) {
+        foreach (var элем in список)
             if (элем is Array ar) {
                 var массив = from object з in ar
                     select з;
                 foreach (var элемМассива in массив)
                     yield return элемМассива;
             }
-            else
+            else {
                 yield return элем;
-        }
+            }
     }
 
     #endregion
-    
+
     #region Форматирование текста
 
     #region «Интерполяция строк»
@@ -172,8 +174,9 @@ public static class Функции{
     [ExcelFunction(Name = Прописная1И, Category = МояКатегория, Description = Прописная1О, IsThreadSafe = true)]
     public static string ПрописнаяПервая(
         [ExcelArgument(Name = Прописная1СтрИ, Description = Прописная1СтрО)]
-        string text)
-        => $"{text[0].ToString().ToUpper()}{text[1..]}";
+        string text){
+        return $"{text[0].ToString().ToUpper()}{text[1..]}";
+    }
 
     #endregion
 
@@ -605,6 +608,143 @@ public static class Функции{
         string base64Текст){
         var байты = Convert.FromBase64String(base64Текст);
         return Encoding.UTF8.GetString(байты);
+    }
+
+    #endregion
+
+    #endregion
+
+    #region Функции массива
+
+    private static bool ЧисловойЛи(this object o){
+        var numericTypes = new HashSet<Type>
+        {
+            //встроенные:
+            typeof(byte),
+            typeof(sbyte),
+            typeof(ushort),
+            typeof(uint),
+            typeof(ulong),
+            typeof(short),
+            typeof(int),
+            typeof(long),
+            typeof(decimal),
+            typeof(double),
+            typeof(float)
+        };
+        return numericTypes.Contains(o.GetType());
+    }
+
+    private class ЦифрыПередТекстомСравниватель : IComparer, IComparer<object?>{
+        // Call CaseInsensitiveComparer.Compare with the parameters reversed.
+        int IComparer.Compare(object? x, object? y){
+            return (x, y) switch
+            {
+                (null, not null) => -1,
+                (null, null) => 0,
+                (not null, null) => 1,
+                (bool b1, bool b2) => b1.CompareTo(b2),
+                (bool, _) => -1,
+                (_, bool) => 1,
+                _ => (x.ЧисловойЛи(), y.ЧисловойЛи()) switch
+                {
+                    (true, true) => Convert.ToDouble(x).CompareTo(Convert.ToDouble(y)),
+                    (true, false) => -1,
+                    (false, true) => 1,
+                    _ => x.ToString()!.CompareTo(y.ToString())
+                }
+            };
+        }
+
+        int IComparer<object>.Compare(object? x, object? y){
+            return ((IComparer)this).Compare(x, y);
+        }
+    }
+
+    #region Соединить списки
+
+    private const string СоедСписИ = nameof(СоединитьСписки);
+    private const string СоедСписО = "Соединяет списки в один";
+    private const string СоедСписСИ = "списки";
+    private const string СоедСписСО = "Объединяемые списки";
+
+    [ExcelFunction(Name = СоедСписИ, Category = МояКатегория, Description = СоедСписО, IsThreadSafe = true)]
+    public static object?[] СоединитьСписки(
+        [ExcelArgument(Name = СоедСписСИ, Description = СоедСписСО)]
+        params object?[]? списки){
+        return FlattenUdfArgument(списки).ToArray();
+    }
+
+    #endregion
+
+    #region Сортировать список
+
+    private const string СортирСписИ = nameof(Сортировать);
+    private const string СортирСписО = "Сортирует элементы в списке";
+    private const string СортирСписСИ = "список";
+    private const string СортирСписСО = "Сортируемый список";
+
+    private const string СортирСписПИ = "поУбыванию";
+
+    private const string СортирСписПО = "По умолчанию сортировка идет по возростанию (Ложь)";
+
+    [ExcelFunction(Name = СортирСписИ, Category = МояКатегория, Description = СортирСписО, IsThreadSafe = true)]
+    public static object?[] Сортировать(
+        [ExcelArgument(Name = СортирСписСИ, Description = СортирСписСО)]
+        object?[]? списки,
+        [ExcelArgument(Name = СортирСписПИ, Description = СортирСписПО)]
+        bool поУбыванию = false){
+        return поУбыванию
+            ? FlattenUdfArgument(списки).OrderByDescending(e => e, new ЦифрыПередТекстомСравниватель()).ToArray()
+            : FlattenUdfArgument(списки).OrderBy(e => e, new ЦифрыПередТекстомСравниватель()).ToArray();
+    }
+
+    #endregion
+
+    #region Убрать повторы в списке
+
+    private const string УникСписИ = nameof(УбратьПовторы);
+    private const string УникСписО = "Оставляет только уникальные элементы в списке";
+    private const string УникСписСИ = "список";
+    private const string УникСписСО = "Список, в котором содержаться повторы";
+
+    [ExcelFunction(Name = УникСписИ, Category = МояКатегория, Description = УникСписО, IsThreadSafe = true)]
+    public static object?[] УбратьПовторы(
+        [ExcelArgument(Name = УникСписСИ, Description = УникСписСО)]
+        params object?[]? списки){
+        return FlattenUdfArgument(списки).Distinct().ToArray();
+    }
+
+    #endregion
+
+    #region Оставить только значимые элементы в списке
+
+    private const string ОставитьЗначИ = nameof(ОставитьЗначимые);
+    private const string ОставитьЗначО = "Убирает из списка не значимые элементы: ошибки, пустые строки";
+    private const string ОставитьЗначСИ = "список";
+    private const string ОставитьЗначСО = "Список, в котором содержаться не значимые элементы";
+
+    [ExcelFunction(Name = ОставитьЗначИ, Category = МояКатегория, Description = ОставитьЗначО, IsThreadSafe = true)]
+    public static object?[] ОставитьЗначимые(
+        [ExcelArgument(Name = ОставитьЗначСИ, Description = ОставитьЗначСО)]
+        params object?[]? списки){
+        return FlattenUdfArgument(списки).Where(ЗначимЛиАргументUdf).ToArray();
+    }
+
+    #endregion
+
+    #region Число значимых элементов в списке
+
+    private const string ЧислоЗначИ = nameof(ЧислоЗначимых);
+    private const string ЧислоЗначО = "Возвращает количество значимых элементов (не ошибки, и не пустые строки)";
+    private const string ЧислоЗначСИ = "список";
+    private const string ЧислоЗначСО = "Список, в котором содержаться не значимые элементы";
+
+    [ExcelFunction(Name = ЧислоЗначИ, Category = МояКатегория, Description = ЧислоЗначО, IsThreadSafe = true)]
+    public static int ЧислоЗначимых(
+        [ExcelArgument(Name = ЧислоЗначСИ, Description = ЧислоЗначСО)]
+        params object?[]? списки){
+        return FlattenUdfArgument(списки).Where(ЗначимЛиАргументUdf).Count();
     }
 
     #endregion
