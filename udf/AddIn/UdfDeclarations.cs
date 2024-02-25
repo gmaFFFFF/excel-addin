@@ -41,6 +41,33 @@ public static class Функции{
     
     #region Форматирование текста
 
+    #region «Интерполяция строк»
+
+    private const string НаборСтрИ = nameof(НаборСтроки);
+
+    private const string НаборСтрО =
+        "Замена заполнителей в строке ({0}, {1}) переданными в качестве аргументов функции значениями";
+
+    private const string НаборСтрHelp =
+        "https://learn.microsoft.com/ru-ru/dotnet/standard/base-types/composite-formatting";
+
+    private const string НаборСтрСтрИ = "текст";
+    private const string НаборСтрСтрО = "Текст с заполнителями {0}, {1}";
+    private const string НаборСтрЗначИ = "значения";
+    private const string НаборСтрЗначО = "Значения заполнителей";
+
+    [ExcelFunction(Name = НаборСтрИ, Category = МояКатегория, Description = НаборСтрО, IsThreadSafe = true,
+        HelpTopic = НаборСтрHelp)]
+    public static string НаборСтроки(
+        [ExcelArgument(Name = НаборСтрСтрИ, Description = НаборСтрСтрО)]
+        string text,
+        [ExcelArgument(Name = НаборСтрЗначИ, Description = НаборСтрЗначО)]
+        params object[] значения){
+        return string.Format(text, значения);
+    }
+
+    #endregion
+
     #region РублиПрописью
 
     private const string РПИ = nameof(РублиПрописью);
