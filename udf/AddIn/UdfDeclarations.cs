@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using ExcelDna.Integration;
 using ExcelDna.Registration;
@@ -110,6 +111,45 @@ public static class Функции{
 
     #endregion
 
+    #region Реверс строки
+
+    private const string РеверсИ = nameof(Реверс);
+    private const string РеверсО = "Возвращает символы текста в обратном порядке";
+    private const string РеверсСтрИ = "текст";
+    private const string РеверсСтрО = "Текст для реверса";
+
+    [ExcelFunction(Name = РеверсИ, Category = МояКатегория, Description = РеверсО, IsThreadSafe = true)]
+    public static string Реверс(
+        [ExcelArgument(Name = РеверсСтрИ, Description = РеверсСтрО)]
+        string text){
+        return string.Join("", GetTextElements(text)
+            .Reverse()
+            .ToArray());
+
+        IEnumerable<string> GetTextElements(string? text){
+            // Источник: https://stackoverflow.com/a/15111719
+            var enumerator = StringInfo.GetTextElementEnumerator(text ?? string.Empty);
+            while (enumerator.MoveNext()) yield return (enumerator.Current as string)!;
+        }
+    }
+
+    #endregion
+
+    #region Первая прописаня
+
+    private const string Прописная1И = nameof(ПрописнаяПервая);
+    private const string Прописная1О = "Делает первую букву в строке прописной";
+    private const string Прописная1СтрИ = "текст";
+    private const string Прописная1СтрО = "Текст";
+
+    [ExcelFunction(Name = Прописная1И, Category = МояКатегория, Description = Прописная1О, IsThreadSafe = true)]
+    public static string ПрописнаяПервая(
+        [ExcelArgument(Name = Прописная1СтрИ, Description = Прописная1СтрО)]
+        string text)
+        => $"{text[0].ToString().ToUpper()}{text[1..]}";
+
+    #endregion
+
     #endregion
 
     #region Информация
@@ -133,8 +173,10 @@ public static class Функции{
     #region Coalesce
 
     private const string CoalИ = nameof(Coalesce);
+
     private const string CoalО = "Возвращает первый из аргументов, не являющихся ошибкой или пустым." +
                                  "Если такого элемента нет, то возвращается пустая строка";
+
     private const string CoalАИ = "аргумент";
     private const string CoalАО = "проверяемый аргумент";
 
@@ -142,8 +184,7 @@ public static class Функции{
     public static object Coalesce(
         [ExcelArgument(Name = CoalАИ, Description = CoalАО)]
         params object?[]? список){
-        
-        if (список is null || !((object[]) список).Any())
+        if (список is null || !((object[])список).Any())
             return ExcelError.ExcelErrorNull;
         var аргументыUdf = FlattenUdfArgument(список);
 
@@ -175,7 +216,7 @@ public static class Функции{
         [ExcelArgument(Name = ВидСтрСсылкаИ, Description = ВидСтрСсылкаО, AllowReference = true)]
         object парам,
         [ExcelArgument(Name = ВидСтрВысотаИ, Description = ВидСтрВысотаО)]
-        double? высота = null ){
+        double? высота = null){
         if (парам is not ExcelReference ссылка)
             return ExcelError.ExcelErrorRef;
 
