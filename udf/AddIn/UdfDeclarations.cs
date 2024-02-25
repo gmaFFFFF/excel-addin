@@ -6,17 +6,38 @@ using gmafffff.excel.udf.Excel.Сетка;
 
 namespace gmafffff.excel.udf.AddIn;
 
-public static class Функции
-{
+public static class Функции{
     private const string МояКатегория = "Функции от gmaFFFFF";
-    private static readonly ИОчередьКоманд _очередьКоманд = new ОчередьКомандRx();
+    private static readonly ИОчередьКоманд ОчередьКоманд = new ОчередьКомандRx();
 
-    static Функции()
-    {
-        _очередьКоманд.ДобавитьКомпоновщикКоманд(typeof(ИзмениВидимостьРядаКоманда),
+    static Функции(){
+        ОчередьКоманд.ДобавитьКомпоновщикКоманд(typeof(ИзмениВидимостьРядаКоманда),
             ИзмениВидимостьРядаКоманда.Упаковать);
     }
 
+    #region Служебные
+ 
+    private static bool ЗначимЛиАргументUdf(object? o) =>
+        o is not null && o is not ExcelError && o is not ExcelMissing &&
+        o is not ExcelEmpty && o is string s && !string.IsNullOrEmpty(s);
+    
+    
+    private static IEnumerable<object?> FlattenUdfArgument(object?[]? список){
+        if (список is null) yield break;
+        foreach (var элем in список) {
+            if (элем is Array ar) {
+                var массив = from object з in ar
+                    select з;
+                foreach (var элемМассива in массив)
+                    yield return элемМассива;
+            }
+            else
+                yield return элем;
+        }
+    }
+
+    #endregion
+    
     #region Форматирование текста
 
     #region РублиПрописью
@@ -36,8 +57,7 @@ public static class Функции
         [ExcelArgument(Name = РПАСуммаИ, Description = РПАСуммаО)]
         double сумма,
         [ExcelArgument(Name = РПАФорматИ, Description = РПAФорматО)]
-        string формат = "")
-    {
+        string формат = ""){
         return ДеньгиПрописью.ДеньгиПрописью.РублиПрописью(сумма, формат);
     }
 
@@ -59,8 +79,7 @@ public static class Функции
         [ExcelArgument(Name = ОГАЧислоИ, Description = ОГАЧислоО)]
         double число,
         [ExcelArgument(Name = ОГАЗнаковИ, Description = ОГАЗнаковО)]
-        short знаков)
-    {
+        short знаков){
         return (знаков, Math.Pow(10, -знаков)) switch
         {
             (> 15, _) => Math.Round(число, 15, MidpointRounding.ToEven),
@@ -85,8 +104,7 @@ public static class Функции
         [ExcelArgument(Name = СФиоАФиоИ, Description = СФиоАФиоО)]
         string фио,
         [ExcelArgument(Name = СФиоАСлеваИ, Description = СФиоАСлеваО)]
-        bool слева = false)
-    {
+        bool слева = false){
         return ФИО.ФИО.СократитьФио(фио, слева);
     }
 
@@ -102,8 +120,7 @@ public static class Функции
     private const string ТПО = "Доступная информация о текущем пользователе из ActiveDirectory";
 
     [ExcelFunction(Name = ТПИ, Category = МояКатегория, Description = ТПО, IsThreadSafe = true)]
-    public static string ТекущийПользователь()
-    {
+    public static string ТекущийПользователь(){
         return new User.User().Json();
     }
 
@@ -116,41 +133,24 @@ public static class Функции
     #region Coalesce
 
     private const string CoalИ = nameof(Coalesce);
-    private const string CoalО = "Возвращает первый из аргументов, не являющихся ошибкой или пустым";
+    private const string CoalО = "Возвращает первый из аргументов, не являющихся ошибкой или пустым." +
+                                 "Если такого элемента нет, то возвращается пустая строка";
     private const string CoalАИ = "аргумент";
     private const string CoalАО = "проверяемый аргумент";
 
     [ExcelFunction(Name = CoalИ, Category = МояКатегория, Description = CoalО, IsThreadSafe = true)]
     public static object Coalesce(
         [ExcelArgument(Name = CoalАИ, Description = CoalАО)]
-        params object?[]? список)
-    {
-        if (список is null)
+        params object?[]? список){
+        
+        if (список is null || !((object[]) список).Any())
             return ExcelError.ExcelErrorNull;
+        var аргументыUdf = FlattenUdfArgument(список);
 
-        object рез = ExcelError.ExcelErrorNull;
-
-        foreach (var элем in список)
-        {
-            if (элем is Array ar)
-                рез = (from object з in ar
-                        where ЗначимЛи(з)
-                        select з)
-                    .FirstOrDefault(ExcelError.ExcelErrorNull);
-            else
-                рез = ЗначимЛи(элем) ? элем : рез;
-
-            if (рез is not ExcelError)
-                return рез!;
-        }
-
-        return рез;
-
-        bool ЗначимЛи(object? o)
-        {
-            return o is not null && o is not ExcelError && o is not ExcelMissing &&
-                   o is not ExcelEmpty && o is string s && !string.IsNullOrEmpty(s);
-        }
+        return (from арг in аргументыUdf
+                where ЗначимЛиАргументUdf(арг)
+                select арг)
+            .FirstOrDefault("");
     }
 
     #endregion
@@ -175,19 +175,16 @@ public static class Функции
         [ExcelArgument(Name = ВидСтрСсылкаИ, Description = ВидСтрСсылкаО, AllowReference = true)]
         object парам,
         [ExcelArgument(Name = ВидСтрВысотаИ, Description = ВидСтрВысотаО)]
-        double? высота = null
-    )
-    {
+        double? высота = null ){
         if (парам is not ExcelReference ссылка)
             return ExcelError.ExcelErrorRef;
 
-        // UDF должны выполняться без побочных эффектов
+        // UDF должны выполняться без побочных эффектов.
         // Данная функция нарушает данное правило, но делает это аккуратно (если это вообще возможно) —
         // побочный эффект будет поставлен в очередь основного потока Excel, когда он будет свободен
-        foreach (var стр in ExcelСтрока.Преобразовать(ссылка))
-        {
+        foreach (var стр in ExcelСтрока.Преобразовать(ссылка)) {
             var команда = new ИзмениВидимостьРядаКоманда(стр, видимаЛи, высота);
-            _очередьКоманд.ДобавитьКоманду(команда);
+            ОчередьКоманд.ДобавитьКоманду(команда);
         }
 
         return видимаЛи;
@@ -212,22 +209,19 @@ public static class Функции
         [ExcelArgument(Name = ВидСтлбСсылкаИ, Description = ВидСтлбСсылкаО, AllowReference = true)]
         object парам,
         [ExcelArgument(Name = ВидСтлбШиринаИ, Description = ВидСтлбШиринаО, AllowReference = true)]
-        double? ширина = null
-    )
-    {
+        double? ширина = null){
         // Предотвращает выполнение пока запущен мастер функций
         if (ExcelDnaUtil.IsInFunctionWizard()) return "";
 
         if (парам is not ExcelReference ссылка)
             return ExcelError.ExcelErrorRef;
 
-        // UDF должны выполняться без побочных эффектов
+        // UDF должны выполняться без побочных эффектов.
         // Данная функция нарушает данное правило, но делает это аккуратно (если это вообще возможно) —
         // побочный эффект будет поставлен в очередь основного потока Excel, когда он будет готов
-        foreach (var стр in ExcelСтолбец.Преобразовать(ссылка))
-        {
+        foreach (var стр in ExcelСтолбец.Преобразовать(ссылка)) {
             var команда = new ИзмениВидимостьРядаКоманда(стр, видимЛи, ширина);
-            _очередьКоманд.ДобавитьКоманду(команда);
+            ОчередьКоманд.ДобавитьКоманду(команда);
         }
 
         return видимЛи;
@@ -290,8 +284,7 @@ public static class Функции
         string[,]? заголовки = null,
         [ExcelArgument(Name = HGPАЗаголовкиJИ, Description = HGPАЗаголовкиJО)]
         string? заголовкиJson = null,
-        CancellationToken ct = default)
-    {
+        CancellationToken ct = default){
         // Предотвращает выполнение пока запущен мастер функций
         if (ExcelDnaUtil.IsInFunctionWizard()) return "";
 
@@ -321,8 +314,7 @@ public static class Функции
         string? заголовкиJson = null,
         [ExcelArgument(Name = HPАТелоИ, Description = HPАТелоО)]
         string? телоJson = null,
-        CancellationToken ct = default)
-    {
+        CancellationToken ct = default){
         // Предотвращает выполнение пока запущен мастер функций
         if (ExcelDnaUtil.IsInFunctionWizard()) return "";
 
@@ -370,13 +362,11 @@ public static class Функции
         string[,]? заголовки = null,
         [ExcelArgument(Name = HGPАЗаголовкиJИ, Description = HGPАЗаголовкиJО)]
         string? заголовкиJson = null,
-        CancellationToken ct = default)
-    {
+        CancellationToken ct = default){
         // Предотвращает выполнение пока запущен мастер функций
         if (ExcelDnaUtil.IsInFunctionWizard()) return "";
 
-        var запросиИВерниФунк = async () =>
-        {
+        var запросиИВерниФунк = async () => {
             var ответ = await HttpGet_active(адрес, null, заголовки, заголовкиJson, ct).ConfigureAwait(false) as string;
             if (ответ is not { } str) return ExcelError.ExcelErrorNA.ToString();
 
@@ -409,13 +399,11 @@ public static class Функции
         string? заголовкиJson = null,
         [ExcelArgument(Name = HPАТелоИ, Description = HPАТелоО)]
         string? телоJson = null,
-        CancellationToken ct = default)
-    {
+        CancellationToken ct = default){
         // Предотвращает выполнение пока запущен мастер функций
         if (ExcelDnaUtil.IsInFunctionWizard()) return "";
 
-        var запросиИВерниФунк = async () =>
-        {
+        var запросиИВерниФунк = async () => {
             var ответ =
                 await HttpPost_active(адрес, null, заголовки, заголовкиJson, телоJson, ct)
                     .ConfigureAwait(false) as string;
@@ -474,8 +462,7 @@ public static class Функции
         [ExcelArgument(Name = JPJMАJsonТекстИ, Description = JPJMАJsonТекстО)]
         string jsonТекст,
         [ExcelArgument(Name = JИАИндексИ, Description = JИАИндексО)]
-        params string[] индексы)
-    {
+        params string[] индексы){
         return JsonКлиент.JsonКлиент.JsonИндекс(jsonТекст, индексы);
     }
 
@@ -485,8 +472,7 @@ public static class Функции
         [ExcelArgument(Name = JPJMАJsonТекстИ, Description = JPJMАJsonТекстО)]
         string jsonТекст,
         [ExcelArgument(Name = JPАJsonPathИ, Description = JPАJsonPathО)]
-        string jsonPath)
-    {
+        string jsonPath){
         return JsonКлиент.JsonКлиент.JsonPathНайди(jsonТекст, jsonPath);
     }
 
@@ -496,8 +482,7 @@ public static class Функции
         [ExcelArgument(Name = JPJMАJsonТекстИ, Description = JPJMАJsonТекстО)]
         string jsonТекст,
         [ExcelArgument(Name = JmPАJsonPathИ, Description = JmPАJsonPathО)]
-        string jmesPath)
-    {
+        string jmesPath){
         return JsonКлиент.JsonКлиент.JmesPathИзмени(jsonТекст, jmesPath);
     }
 
@@ -521,8 +506,7 @@ public static class Функции
     [ExcelFunction(Name = B64КИ, Category = МояКатегория, Description = B64КО, IsThreadSafe = true)]
     public static string Base64Кодировать(
         [ExcelArgument(Name = B64КАТекстИ, Description = B64КАТекстО)]
-        string текст)
-    {
+        string текст){
         var байты = Encoding.UTF8.GetBytes(текст);
         return Convert.ToBase64String(байты);
     }
@@ -530,8 +514,7 @@ public static class Функции
     [ExcelFunction(Name = B64ДИ, Category = МояКатегория, Description = B64ДО, IsThreadSafe = true)]
     public static string Base64Декодировать(
         [ExcelArgument(Name = B64ДАbase64ТекстИ, Description = B64ДАbase64ТекстО)]
-        string base64Текст)
-    {
+        string base64Текст){
         var байты = Convert.FromBase64String(base64Текст);
         return Encoding.UTF8.GetString(байты);
     }
