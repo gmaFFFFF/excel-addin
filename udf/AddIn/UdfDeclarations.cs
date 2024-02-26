@@ -19,9 +19,9 @@ public static class Функции{
 
     #region Служебные
 
-    private static bool ЗначимЛиАргументUdf(object? o){
-        return o is not null && o is not ExcelError && o is not ExcelMissing &&
-               o is not ExcelEmpty && o is string s && !string.IsNullOrEmpty(s);
+    private static bool ЗначимЛиАргументUdf(object? o) {
+        return !(o is null || o is ExcelError || o is ExcelMissing ||
+                 o is ExcelEmpty || (o is string s && string.IsNullOrEmpty(s)));
     }
 
 
@@ -60,11 +60,16 @@ public static class Функции{
 
     [ExcelFunction(Name = НаборСтрИ, Category = МояКатегория, Description = НаборСтрО, IsThreadSafe = true,
         HelpTopic = НаборСтрHelp)]
-    public static string НаборСтроки(
+    public static object НаборСтроки(
         [ExcelArgument(Name = НаборСтрСтрИ, Description = НаборСтрСтрО)]
         string text,
         [ExcelArgument(Name = НаборСтрЗначИ, Description = НаборСтрЗначО)]
-        params object[] значения){
+        params object[] значения) {
+        var ошибки = from з in значения
+            where з is ExcelError || з is ExcelMissing
+            select з;
+        if (ошибки.Any()) return ExcelError.ExcelErrorNA;
+        
         return string.Format(text, значения);
     }
 
