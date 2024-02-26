@@ -14,8 +14,8 @@ public sealed partial class ДеньгиПрописью {
             ArgumentNullException.ThrowIfNull(справочник);
 
             Справочник = справочник;
-            ВалютаIso = валютаIso;
-            Число = число;
+            ВалютаIso  = валютаIso;
+            Число      = число;
         }
 
         /// <summary>
@@ -29,8 +29,8 @@ public sealed partial class ДеньгиПрописью {
         public decimal Число {
             get => _число;
             set {
-                _число = value;
-                _целаяЧасть = new ЧислоЦелоеКлассы(ЦелаяЧасть, Справочник);
+                _число        = value;
+                _целаяЧасть   = new ЧислоЦелоеКлассы(ЦелаяЧасть, Справочник);
                 _дробнаяЧасть = new ЧислоЦелоеКлассы(ДробнаяЧасть, Справочник);
             }
         }
@@ -61,11 +61,11 @@ public sealed partial class ДеньгиПрописью {
         /// </param>
         /// <returns></returns>
         public string ToString(string? format, IFormatProvider? formatProvider) {
-            const char пробел_между_разрядами = ' ';
+            const char пробел_между_разрядами                         = ' ';
             if (string.IsNullOrEmpty(format) || format == "G") format = "ч2 рс (бтз р д2 к)";
 
             formatProvider ??= CultureInfo.CurrentCulture;
-            format = format.ToLower();
+            format         =   format.ToLower();
 
             StringBuilder итог = new();
 
@@ -73,12 +73,12 @@ public sealed partial class ДеньгиПрописью {
 
             while (символы.Count > 0) {
                 var тек = символы.Dequeue() switch {
-                    (char)СимволыФормата.ВалютаЦеликом => ПреобразуйВалютуВСтроку(),
-                    (char)СимволыФормата.ВалютаБазовая => ФорматируйВалютуВСтроку(_целаяЧасть),
-                    (char)СимволыФормата.ВалютаДробная => ФорматируйВалютуВСтроку(_дробнаяЧасть, '0'),
+                    (char)СимволыФормата.ВалютаЦеликом      => ПреобразуйВалютуВСтроку(),
+                    (char)СимволыФормата.ВалютаБазовая      => ФорматируйВалютуВСтроку(_целаяЧасть),
+                    (char)СимволыФормата.ВалютаДробная      => ФорматируйВалютуВСтроку(_дробнаяЧасть, '0'),
                     (char)СимволыФормата.ВалютаОбознБазовая => ФорматируйОбознВалютыБ(),
                     (char)СимволыФормата.ВалютаОбознДробная => ФорматируйОбознВалютыД(),
-                    var sym => sym.ToString()
+                    var sym                                 => sym.ToString()
                 };
                 итог.Append(тек);
             }
@@ -104,8 +104,7 @@ public sealed partial class ДеньгиПрописью {
 
 
                 string ФорматируйПервуюБукву(string текст) {
-                    if (!символы.TryPeek(out var след) || след != (char)СимволыФормата.ЗаглавняБуква)
-                        return текст;
+                    if (!символы.TryPeek(out var след) || след != (char)СимволыФормата.ЗаглавняБуква) return текст;
 
                     символы.Dequeue();
                     return ПреобрПервуюБуквуВЗаглавную(текст);
@@ -120,9 +119,9 @@ public sealed partial class ДеньгиПрописью {
                 }
 
                 string ПреобразуйЧислоВСтроку(ЧислоЦелоеКлассы число) {
-                    var шир = ВытолкниЧисло() ?? 0;
-                    var формат = ((decimal)число).ToString("N0");
-                    var формат_пробел = формат.Replace(' ', пробел_между_разрядами);
+                    var шир               = ВытолкниЧисло() ?? 0;
+                    var формат            = ((decimal)число).ToString("N0");
+                    var формат_пробел     = формат.Replace(' ', пробел_между_разрядами);
                     var формат_пробел_шир = формат_пробел.PadLeft(шир, заполнитель);
                     return формат_пробел_шир;
                 }
@@ -133,7 +132,7 @@ public sealed partial class ДеньгиПрописью {
             }
 
             string ПреобразуйВалютуВСтроку() {
-                var фрмт = (NumberFormatInfo?)formatProvider.GetFormat(typeof(NumberFormatInfo));
+                var фрмт  = (NumberFormatInfo?)formatProvider.GetFormat(typeof(NumberFormatInfo));
                 var округ = ВытолкниЧисло() ?? фрмт?.CurrencyDecimalDigits ?? 2;
 
                 return _число.ToString($"N{округ}", formatProvider).Replace(' ', пробел_между_разрядами);
@@ -142,15 +141,17 @@ public sealed partial class ДеньгиПрописью {
             int? ВытолкниЧисло() {
                 var число_текст = new string(ВытолкниЧисловыеСимволы().ToArray());
                 return int.TryParse(число_текст, out var рез)
-                    ? рез
-                    : null;
+                           ? рез
+                           : null;
             }
 
             IEnumerable<char> ВытолкниЧисловыеСимволы() {
-                while (символы.Count > 0)
+                while (символы.Count > 0) {
                     if (char.IsNumber(символы.Peek()))
                         yield return символы.Dequeue();
-                    else yield break;
+                    else
+                        yield break;
+                }
             }
         }
 
@@ -164,24 +165,20 @@ public sealed partial class ДеньгиПрописью {
 
         public string ДайПодписьВалютыБазовой(bool сокращенноеЛи = false) {
             return сокращенноеЛи
-                ? Справочник.ДайНазваниеБазовойВалютыСокр(_целаяЧасть, ВалютаIso)
-                : Справочник.ДайНазваниеБазовойВалютыПолное(_целаяЧасть, ВалютаIso);
+                       ? Справочник.ДайНазваниеБазовойВалютыСокр(_целаяЧасть, ВалютаIso)
+                       : Справочник.ДайНазваниеБазовойВалютыПолное(_целаяЧасть, ВалютаIso);
         }
 
         public string ДайПодписьВалютыДробной(bool сокращенноеЛи = false) {
             return сокращенноеЛи
-                ? Справочник.ДайНазваниеДробнойВалютыСокр(_дробнаяЧасть, ВалютаIso)
-                : Справочник.ДайНазваниеДробнойВалютыПолное(_дробнаяЧасть, ВалютаIso);
+                       ? Справочник.ДайНазваниеДробнойВалютыСокр(_дробнаяЧасть, ВалютаIso)
+                       : Справочник.ДайНазваниеДробнойВалютыПолное(_дробнаяЧасть, ВалютаIso);
         }
 
 
-        public override string ToString() {
-            return ToString("G", CultureInfo.CurrentCulture);
-        }
+        public override string ToString() { return ToString("G", CultureInfo.CurrentCulture); }
 
-        public string ToString(string format) {
-            return ToString(format, CultureInfo.CurrentCulture);
-        }
+        public string ToString(string format) { return ToString(format, CultureInfo.CurrentCulture); }
 
         private enum СимволыФормата {
             ВалютаЦеликом = 'ч',

@@ -7,17 +7,18 @@ namespace gmafffff.excel.udf.AddIn;
 public sealed class AddIn : IExcelAddIn {
     private static ParameterConversionConfiguration АвтоПриведениеТиповКонфиг
         => new ParameterConversionConfiguration()
-            // Добавляет поддержку параметров string[] (вместо этого принимается object[]).
-            // Использует служебный класс TypeConversion, определенный в ExcelDna.Registration, 
-            // преобразование выполняется Excel.
-            .AddParameterConversion((object[] inputs) => inputs.Select(TypeConversion.ConvertToString).ToArray())
-            // Добавляет поддержку параметров string[,] (вместо этого принимается object[,]).
-            .AddParameterConversion((object[,] arr) => Массив2dОбъектовВМассив2dСтрок(arr))
-            // Пара очень общих преобразований для типов Enum
-            .AddReturnConversion((Enum value) => value.ToString(), true)
-            .AddParameterConversion(ParameterConversions.GetEnumStringConversion())
-            // Поддержка nullable типов
-            .AddNullableConversion();
+           // Добавляет поддержку параметров string[] (вместо этого принимается object[]).
+           // Использует служебный класс TypeConversion, определенный в ExcelDna.Registration, 
+           // преобразование выполняется Excel.
+          .AddParameterConversion((object[] inputs) => inputs.Select(TypeConversion.ConvertToString).ToArray())
+           // Добавляет поддержку параметров string[,] (вместо этого принимается object[,]).
+          .AddParameterConversion((object[,] arr) => Массив2dОбъектовВМассив2dСтрок(arr))
+           // Пара очень общих преобразований для типов Enum
+          .AddReturnConversion((Enum value) => value.ToString(), true)
+          .AddParameterConversion(ParameterConversions.GetEnumStringConversion())
+           // Поддержка nullable типов
+          .AddNullableConversion();
+
     public void AutoOpen() {
         ExcelIntegration.RegisterUnhandledExceptionHandler(ex => $"!!! Ошибка: {ex}");
         РегистрироватьФункции();
@@ -25,22 +26,20 @@ public sealed class AddIn : IExcelAddIn {
         IntelliSenseServer.Install(); // Важен порядок вызова после регистрации функций, иначе нужен Refresh
     }
 
-    public void AutoClose() {
-        IntelliSenseServer.Uninstall();
-    }
+    public void AutoClose() { IntelliSenseServer.Uninstall(); }
 
     private static void РегистрироватьФункции() {
         ExcelRegistration.GetExcelFunctions()
-            .ProcessMapArrayFunctions()
-            .ProcessParameterConversions(АвтоПриведениеТиповКонфиг)
-            // Преимущество встроенной поддержки асинхронных функций (nativeAsyncIfAvailable):
-            //   — пока функция вычисляется в ячейке будет отображаться #ВЫЧИСЛ! вместо #Н/Д
-            // Недостатки встроенной поддержки асинхронных функций:
-            //   — требуется два раза нажать Enter, чтобы продолжить ввод данных;
-            //   — субъективно работает медленнее.
-            .ProcessAsyncRegistrations(nativeAsyncIfAvailable: false)
-            .ProcessParamsRegistrations()
-            .RegisterFunctions();
+                         .ProcessMapArrayFunctions()
+                         .ProcessParameterConversions(АвтоПриведениеТиповКонфиг)
+                          // Преимущество встроенной поддержки асинхронных функций (nativeAsyncIfAvailable):
+                          //   — пока функция вычисляется в ячейке будет отображаться #ВЫЧИСЛ! вместо #Н/Д
+                          // Недостатки встроенной поддержки асинхронных функций:
+                          //   — требуется два раза нажать Enter, чтобы продолжить ввод данных;
+                          //   — субъективно работает медленнее.
+                         .ProcessAsyncRegistrations()
+                         .ProcessParamsRegistrations()
+                         .RegisterFunctions();
     }
 
 

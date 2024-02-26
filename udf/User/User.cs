@@ -11,32 +11,32 @@ public class User {
 
         try {
             using PrincipalContext adContextGeneral = new(ContextType.Domain);
-            using var userPrincipal = UserPrincipal.FindByIdentity(adContextGeneral, user.Name);
+            using var              userPrincipal    = UserPrincipal.FindByIdentity(adContextGeneral, user.Name);
 
             ОтображаемоеИмя = userPrincipal?.DisplayName;
-            Фамилия = userPrincipal?.Surname;
-            Имя = userPrincipal?.GivenName;
-            Имя2 = userPrincipal?.Name;
-            Отчество = userPrincipal?.MiddleName;
-            AdИмя = userPrincipal?.UserPrincipalName;
-            УчетнаяЗапись = user.Name;
-            Телефон = userPrincipal?.VoiceTelephoneNumber;
-            Email = userPrincipal?.EmailAddress;
+            Фамилия         = userPrincipal?.Surname;
+            Имя             = userPrincipal?.GivenName;
+            Имя2            = userPrincipal?.Name;
+            Отчество        = userPrincipal?.MiddleName;
+            AdИмя           = userPrincipal?.UserPrincipalName;
+            УчетнаяЗапись   = user.Name;
+            Телефон         = userPrincipal?.VoiceTelephoneNumber;
+            Email           = userPrincipal?.EmailAddress;
         }
         catch (PlatformNotSupportedException) {
             Ошибка = true;
-            ОшибкаТекст = "Неподдерживаемая платформа. " +
-                          "Попробуйте рядом с *.xll-файлом add-in разместить следующие библиотеки:\n" +
-                          "— System.DirectoryServices.dll\n" +
-                          "— System.DirectoryServices.AccountManagement.dll\n" +
-                          "— System.DirectoryServices.Protocols.dll";
+            ОшибкаТекст = "Неподдерживаемая платформа. "
+                        + "Попробуйте рядом с *.xll-файлом add-in разместить следующие библиотеки:\n"
+                        + "— System.DirectoryServices.dll\n"
+                        + "— System.DirectoryServices.AccountManagement.dll\n"
+                        + "— System.DirectoryServices.Protocols.dll";
         }
         catch (PrincipalServerDownException) {
-            Ошибка = true;
+            Ошибка      = true;
             ОшибкаТекст = "Недоступен сервер ActiveDirectory";
         }
         catch (Exception ex) {
-            Ошибка = true;
+            Ошибка      = true;
             ОшибкаТекст = ex.Message;
         }
     }
@@ -55,8 +55,7 @@ public class User {
 
     public string Json() {
         JsonSerializerOptions настройкиСохранения = new() {
-            WriteIndented = true, AllowTrailingCommas = true,
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            WriteIndented = true, AllowTrailingCommas = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
         };
 
         return JsonSerializer.Serialize(this, настройкиСохранения);

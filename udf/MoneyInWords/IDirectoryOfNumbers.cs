@@ -50,7 +50,7 @@ public sealed partial class ДеньгиПрописью {
         /// <param name="валюта">валюта</param>
         /// <returns></returns>
         public string ДайНазваниеБазовойВалютыПолное(ЧислоЦелоеКлассы число,
-            ВалютаIso валюта = ВалютаIso.Rub);
+                                                     ВалютаIso валюта = ВалютаIso.Rub);
 
         /// <summary>
         ///     Сокращенное название базовой валюты с правильным склонением
@@ -59,7 +59,7 @@ public sealed partial class ДеньгиПрописью {
         /// <param name="валюта">валюта</param>
         /// <returns></returns>
         public string ДайНазваниеБазовойВалютыСокр(ЧислоЦелоеКлассы? число = null,
-            ВалютаIso валюта = ВалютаIso.Rub);
+                                                   ВалютаIso валюта = ВалютаIso.Rub);
 
         /// <summary>
         ///     Название дробной валюты с правильным склонением
@@ -68,7 +68,7 @@ public sealed partial class ДеньгиПрописью {
         /// <param name="валюта">валюта</param>
         /// <returns></returns>
         public string ДайНазваниеДробнойВалютыПолное(ЧислоЦелоеКлассы число,
-            ВалютаIso валюта = ВалютаIso.Rub);
+                                                     ВалютаIso валюта = ВалютаIso.Rub);
 
         /// <summary>
         ///     Сокращенное название дробной валюты с правильным склонением
@@ -77,6 +77,6 @@ public sealed partial class ДеньгиПрописью {
         /// <param name="валюта">валюта</param>
         /// <returns></returns>
         public string ДайНазваниеДробнойВалютыСокр(ЧислоЦелоеКлассы? число = null,
-            ВалютаIso валюта = ВалютаIso.Rub);
+                                                   ВалютаIso валюта = ВалютаIso.Rub);
     }
 }

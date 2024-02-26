@@ -8,35 +8,39 @@ using gmafffff.excel.udf.Excel.Сетка;
 
 namespace gmafffff.excel.udf.AddIn;
 
-public static class Функции{
+public static class Функции {
     private const string МояКатегория = "Функции от gmaFFFFF";
     private static readonly ИОчередьКоманд ОчередьКоманд = new ОчередьКомандRx();
 
-    static Функции(){
+    static Функции() {
         ОчередьКоманд.ДобавитьКомпоновщикКоманд(typeof(ИзмениВидимостьРядаКоманда),
-            ИзмениВидимостьРядаКоманда.Упаковать);
+                                                ИзмениВидимостьРядаКоманда.Упаковать);
     }
 
     #region Служебные
 
     private static bool ЗначимЛиАргументUdf(object? o) {
-        return !(o is null || o is ExcelError || o is ExcelMissing ||
-                 o is ExcelEmpty || (o is string s && string.IsNullOrEmpty(s)));
+        return !(o is null
+              || o is ExcelError
+              || o is ExcelMissing
+              || o is ExcelEmpty
+              || (o is string s && string.IsNullOrEmpty(s)));
     }
 
 
-    private static IEnumerable<object?> FlattenUdfArgument(object?[]? список){
+    private static IEnumerable<object?> FlattenUdfArgument(object?[]? список) {
         if (список is null) yield break;
-        foreach (var элем in список)
+        foreach (var элем in список) {
             if (элем is Array ar) {
                 var массив = from object з in ar
-                    select з;
-                foreach (var элемМассива in массив)
+                             select з;
+                foreach (var элемМассива in массив) {
                     yield return элемМассива;
+                }
             }
-            else {
+            else
                 yield return элем;
-            }
+        }
     }
 
     #endregion
@@ -47,8 +51,8 @@ public static class Функции{
 
     private const string НаборСтрИ = nameof(НаборСтроки);
 
-    private const string НаборСтрО =
-        "Замена заполнителей в строке ({0}, {1}) переданными в качестве аргументов функции значениями";
+    private const string НаборСтрО = "Замена заполнителей в строке ({0}, {1}) значениями, "
+                                   + "переданными в качестве аргументов функции";
 
     private const string НаборСтрHelp =
         "https://learn.microsoft.com/ru-ru/dotnet/standard/base-types/composite-formatting";
@@ -59,17 +63,16 @@ public static class Функции{
     private const string НаборСтрЗначО = "Значения заполнителей";
 
     [ExcelFunction(Name = НаборСтрИ, Category = МояКатегория, Description = НаборСтрО, IsThreadSafe = true,
-        HelpTopic = НаборСтрHelp)]
-    public static object НаборСтроки(
-        [ExcelArgument(Name = НаборСтрСтрИ, Description = НаборСтрСтрО)]
-        string text,
-        [ExcelArgument(Name = НаборСтрЗначИ, Description = НаборСтрЗначО)]
-        params object[] значения) {
+                   HelpTopic = НаборСтрHelp)]
+    public static object НаборСтроки([ExcelArgument(Name = НаборСтрСтрИ, Description = НаборСтрСтрО)] string text,
+                                     [ExcelArgument(Name = НаборСтрЗначИ, Description = НаборСтрЗначО)]
+                                     params object[] значения) {
         var ошибки = from з in значения
-            where з is ExcelError || з is ExcelMissing
-            select з;
+                     where з is ExcelError or ExcelMissing
+                     select з;
+
         if (ошибки.Any()) return ExcelError.ExcelErrorNA;
-        
+
         return string.Format(text, значения);
     }
 
@@ -83,16 +86,15 @@ public static class Функции{
     private const string РПАСуммаО = "сумма, которую необходимо написать прописью";
     private const string РПАФорматИ = "формат";
 
-    private const string РПAФорматО = "ч[n](сумма, n - знаков после запятой), б/д[n][т[з]]" +
-                                      "(целая/дробная часть, т - текстом, з - с заглавной, n - ширина), р/к[с]" +
-                                      "(валюта базовая/дробная, с - сокращенная). Пример: «ч2 рс (бтз р д2 к)»";
+    private const string РПAФорматО = "ч[n](сумма, n - знаков после запятой), б/д[n][т[з]]"
+                                    + "(целая/дробная часть, т - текстом, з - с заглавной, n - ширина), р/к[с]"
+                                    + "(валюта базовая/дробная, с - сокращенная). Пример: «ч2 рс (бтз р д2 к)»";
 
     [ExcelFunction(Name = РПИ, Category = МояКатегория, Description = РПО, IsThreadSafe = true)]
-    public static string РублиПрописью(
-        [ExcelArgument(Name = РПАСуммаИ, Description = РПАСуммаО)]
-        double сумма,
-        [ExcelArgument(Name = РПАФорматИ, Description = РПAФорматО)]
-        string формат = ""){
+    public static string РублиПрописью([ExcelArgument(Name = РПАСуммаИ, Description = РПАСуммаО)] double сумма,
+                                       [ExcelArgument(Name = РПАФорматИ,
+                                                      Description = РПAФорматО)]
+                                       string формат = "") {
         return ДеньгиПрописью.ДеньгиПрописью.РублиПрописью(сумма, формат);
     }
 
@@ -106,19 +108,15 @@ public static class Функции{
     private const string ОГАЧислоО = "округляемое число";
     private const string ОГАЗнаковИ = "знаков";
 
-    private const string ОГАЗнаковО = "число знаков, до которых происходит округление. Если < 0, то перед запятой. " +
-                                      "Максимум 15 знаков, по умолчанию — 0";
+    private const string ОГАЗнаковО = "число знаков, до которых происходит округление. Если < 0, то перед запятой. "
+                                    + "Максимум 15 знаков, по умолчанию — 0";
 
     [ExcelFunction(Name = ОГИ, Category = МояКатегория, Description = ОГО, IsThreadSafe = true)]
-    public static double ОкруглГаус(
-        [ExcelArgument(Name = ОГАЧислоИ, Description = ОГАЧислоО)]
-        double число,
-        [ExcelArgument(Name = ОГАЗнаковИ, Description = ОГАЗнаковО)]
-        short знаков){
-        return (знаков, Math.Pow(10, -знаков)) switch
-        {
-            (> 15, _) => Math.Round(число, 15, MidpointRounding.ToEven),
-            (>= 0, _) => Math.Round(число, знаков, MidpointRounding.ToEven),
+    public static double ОкруглГаус([ExcelArgument(Name = ОГАЧислоИ, Description = ОГАЧислоО)] double число,
+                                    [ExcelArgument(Name = ОГАЗнаковИ, Description = ОГАЗнаковО)] short знаков) {
+        return (знаков, Math.Pow(10, -знаков)) switch {
+            (> 15, _)          => Math.Round(число, 15, MidpointRounding.ToEven),
+            (>= 0, _)          => Math.Round(число, знаков, MidpointRounding.ToEven),
             (< 0, var степень) => Math.Round(число / степень, 0, MidpointRounding.ToEven) * степень
         };
     }
@@ -135,11 +133,9 @@ public static class Функции{
     private const string СФиоАСлеваО = "инициалы слева?";
 
     [ExcelFunction(Name = СФиоИ, Category = МояКатегория, Description = СФиоО, IsThreadSafe = true)]
-    public static string СократитьФио(
-        [ExcelArgument(Name = СФиоАФиоИ, Description = СФиоАФиоО)]
-        string фио,
-        [ExcelArgument(Name = СФиоАСлеваИ, Description = СФиоАСлеваО)]
-        bool слева = false){
+    public static string СократитьФио([ExcelArgument(Name = СФиоАФиоИ, Description = СФиоАФиоО)] string фио,
+                                      [ExcelArgument(Name = СФиоАСлеваИ, Description = СФиоАСлеваО)]
+                                      bool слева = false) {
         return ФИО.ФИО.СократитьФио(фио, слева);
     }
 
@@ -153,17 +149,16 @@ public static class Функции{
     private const string РеверсСтрО = "Текст для реверса";
 
     [ExcelFunction(Name = РеверсИ, Category = МояКатегория, Description = РеверсО, IsThreadSafe = true)]
-    public static string Реверс(
-        [ExcelArgument(Name = РеверсСтрИ, Description = РеверсСтрО)]
-        string text){
+    public static string Реверс([ExcelArgument(Name = РеверсСтрИ, Description = РеверсСтрО)] string text) {
         return string.Join("", GetTextElements(text)
-            .Reverse()
-            .ToArray());
+                              .Reverse()
+                              .ToArray());
 
-        IEnumerable<string> GetTextElements(string? text){
+        IEnumerable<string> GetTextElements(string? text) {
             // Источник: https://stackoverflow.com/a/15111719
             var enumerator = StringInfo.GetTextElementEnumerator(text ?? string.Empty);
-            while (enumerator.MoveNext()) yield return (enumerator.Current as string)!;
+            while (enumerator.MoveNext())
+                yield return (enumerator.Current as string)!;
         }
     }
 
@@ -178,8 +173,7 @@ public static class Функции{
 
     [ExcelFunction(Name = Прописная1И, Category = МояКатегория, Description = Прописная1О, IsThreadSafe = true)]
     public static string ПрописнаяПервая(
-        [ExcelArgument(Name = Прописная1СтрИ, Description = Прописная1СтрО)]
-        string text){
+        [ExcelArgument(Name = Прописная1СтрИ, Description = Прописная1СтрО)] string text) {
         return $"{text[0].ToString().ToUpper()}{text[1..]}";
     }
 
@@ -195,9 +189,7 @@ public static class Функции{
     private const string ТПО = "Доступная информация о текущем пользователе из ActiveDirectory";
 
     [ExcelFunction(Name = ТПИ, Category = МояКатегория, Description = ТПО, IsThreadSafe = true)]
-    public static string ТекущийПользователь(){
-        return new User.User().Json();
-    }
+    public static string ТекущийПользователь() => new User.User().Json();
 
     #endregion
 
@@ -214,10 +206,7 @@ public static class Функции{
 
     [ExcelFunction(Name = ФайлСущЛиИ, Category = МояКатегория, Description = ФайлСущЛиО, IsThreadSafe = true)]
     public static bool ФайлСуществуетЛи(
-        [ExcelArgument(Name = ФайлСущЛиПутьИ, Description = ФайлСущЛиПутьО)]
-        string path){
-        return File.Exists(path);
-    }
+        [ExcelArgument(Name = ФайлСущЛиПутьИ, Description = ФайлСущЛиПутьО)] string path) => File.Exists(path);
 
     #endregion
 
@@ -229,16 +218,14 @@ public static class Функции{
 
     private const string CoalИ = nameof(Coalesce);
 
-    private const string CoalО = "Возвращает первый из аргументов, не являющихся ошибкой или пустым." +
-                                 "Если такого элемента нет, то возвращается пустая строка";
+    private const string CoalО = "Возвращает первый из аргументов, не являющихся ошибкой или пустым."
+                               + "Если такого элемента нет, то возвращается пустая строка";
 
     private const string CoalАИ = "аргумент";
     private const string CoalАО = "проверяемый аргумент";
 
     [ExcelFunction(Name = CoalИ, Category = МояКатегория, Description = CoalО, IsThreadSafe = true)]
-    public static object Coalesce(
-        [ExcelArgument(Name = CoalАИ, Description = CoalАО)]
-        params object?[]? список){
+    public static object Coalesce([ExcelArgument(Name = CoalАИ, Description = CoalАО)] params object?[]? список) {
         if (список is null || !((object[])список).Any())
             return ExcelError.ExcelErrorNull;
         var аргументыUdf = FlattenUdfArgument(список);
@@ -246,7 +233,7 @@ public static class Функции{
         return (from арг in аргументыUdf
                 where ЗначимЛиАргументUdf(арг)
                 select арг)
-            .FirstOrDefault("");
+           .FirstOrDefault("");
     }
 
     #endregion
@@ -261,19 +248,17 @@ public static class Функции{
     private const string ВидСтрСсылкаО = "укажи строку";
     private const string ВидСтрВысотаИ = "высота";
 
-    private const string ВидСтрВысотаО = "необязательная высота отображенной строки, " +
-                                         "соответствует высоте шрифта по умолчанию";
+    private const string ВидСтрВысотаО =
+        "необязательная высота отображенной строки, " + "соответствует высоте шрифта по умолчанию";
 
     [ExcelFunction(Name = ВидСтрИ, Category = МояКатегория, Description = ВидСтрО, IsMacroType = true)]
-    public static object ОтобрСтр(
-        [ExcelArgument(Name = ВидСтрПереклИ, Description = ВидСтрПереклО)]
-        bool видимаЛи,
-        [ExcelArgument(Name = ВидСтрСсылкаИ, Description = ВидСтрСсылкаО, AllowReference = true)]
-        object парам,
-        [ExcelArgument(Name = ВидСтрВысотаИ, Description = ВидСтрВысотаО)]
-        double? высота = null){
-        if (парам is not ExcelReference ссылка)
-            return ExcelError.ExcelErrorRef;
+    public static object ОтобрСтр([ExcelArgument(Name = ВидСтрПереклИ, Description = ВидСтрПереклО)] bool видимаЛи,
+                                  [ExcelArgument(Name = ВидСтрСсылкаИ, Description = ВидСтрСсылкаО,
+                                                 AllowReference = true)]
+                                  object парам,
+                                  [ExcelArgument(Name = ВидСтрВысотаИ, Description = ВидСтрВысотаО)] double? высота =
+                                      null) {
+        if (парам is not ExcelReference ссылка) return ExcelError.ExcelErrorRef;
 
         // UDF должны выполняться без побочных эффектов.
         // Данная функция нарушает данное правило, но делает это аккуратно (если это вообще возможно) —
@@ -295,22 +280,21 @@ public static class Функции{
     private const string ВидСтлбСсылкаО = "укажи столбец";
     private const string ВидСтлбШиринаИ = "ширина";
 
-    private const string ВидСтлбШиринаО = "необязательная ширина отображенного столбца, " +
-                                          "соответствует ширине символа шрифта по умолчанию";
+    private const string ВидСтлбШиринаО = "необязательная ширина отображенного столбца, "
+                                        + "соответствует ширине символа шрифта по умолчанию";
 
     [ExcelFunction(Name = ВидСтлбИ, Category = МояКатегория, Description = ВидСтлбО, IsMacroType = true)]
-    public static object ОтобрСтлб(
-        [ExcelArgument(Name = ВидСтлбПереклИ, Description = ВидСтлбПереклО)]
-        bool видимЛи,
-        [ExcelArgument(Name = ВидСтлбСсылкаИ, Description = ВидСтлбСсылкаО, AllowReference = true)]
-        object парам,
-        [ExcelArgument(Name = ВидСтлбШиринаИ, Description = ВидСтлбШиринаО, AllowReference = true)]
-        double? ширина = null){
+    public static object ОтобрСтлб([ExcelArgument(Name = ВидСтлбПереклИ, Description = ВидСтлбПереклО)] bool видимЛи,
+                                   [ExcelArgument(Name = ВидСтлбСсылкаИ, Description = ВидСтлбСсылкаО,
+                                                  AllowReference = true)]
+                                   object парам,
+                                   [ExcelArgument(Name = ВидСтлбШиринаИ, Description = ВидСтлбШиринаО,
+                                                  AllowReference = true)]
+                                   double? ширина = null) {
         // Предотвращает выполнение пока запущен мастер функций
         if (ExcelDnaUtil.IsInFunctionWizard()) return "";
 
-        if (парам is not ExcelReference ссылка)
-            return ExcelError.ExcelErrorRef;
+        if (парам is not ExcelReference ссылка) return ExcelError.ExcelErrorRef;
 
         // UDF должны выполняться без побочных эффектов.
         // Данная функция нарушает данное правило, но делает это аккуратно (если это вообще возможно) —
@@ -334,17 +318,17 @@ public static class Функции{
     private const string HGАктивИ = nameof(HttpGet_active);
     private const string HPАктивИ = nameof(HttpPost_active);
 
-    private const string HGPОобщее = "запрос возвращает json с полями: " +
-                                     $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.Статус)}; " +
-                                     $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.ДатаЗапроса)}; " +
-                                     $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.Содержимое)}; " +
-                                     $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.Заголовки)} (ответа); " +
-                                     $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.Заголовки2)} (содержимого); " +
-                                     $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.Куки)}.\n";
+    private const string HGPОобщее = "запрос возвращает json с полями: "
+                                   + $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.Статус)}; "
+                                   + $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.ДатаЗапроса)}; "
+                                   + $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.Содержимое)}; "
+                                   + $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.Заголовки)} (ответа); "
+                                   + $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.Заголовки2)} (содержимого); "
+                                   + $"{nameof(HttpКлиент.HttpКлиент.ОтветHttp.Куки)}.\n";
 
-    private const string HGPАктив_Предупреждение = "Внимание: " +
-                                                   "1)выполняется ОЧЕНЬ часто — при пересчете листа," +
-                                                   "2)кол-во символов в ячейке ограничено";
+    private const string HGPАктив_Предупреждение = "Внимание: "
+                                                 + "1)выполняется ОЧЕНЬ часто — при пересчете листа,"
+                                                 + "2)кол-во символов в ячейке ограничено";
 
     private const string HGАктивО = "Get " + HGPОобщее + HGPАктив_Предупреждение;
     private const string HPАктивО = "Post " + HGPОобщее + HGPАктив_Предупреждение;
@@ -353,64 +337,52 @@ public static class Функции{
     private const string HGPААдресО = "Url адрес, по которому необходимо сделать запрос";
     private const string HGPАJsonPathИ = "jsonPath";
 
-    private const string HGPАJsonPathО = "Необязательный JSONPath позволяет выбрать нужный элемент из ответа.\n" +
-                                         "Подробнее о формате JSONPath по ссылке:\n" +
-                                         JsonPathHelpUrl;
+    private const string HGPАJsonPathО = "Необязательный JSONPath позволяет выбрать нужный элемент из ответа.\n"
+                                       + "Подробнее о формате JSONPath по ссылке:\n"
+                                       + JsonPathHelpUrl;
 
     private const string HGPАЗаголовкиИ = "заголовки";
     private const string HGPАЗаголовкиJИ = "заголовкиJSON";
 
-    private const string HGPАЗаголовкиО = "Необязательный диапазон с заголовками запроса:\n" +
-                                          "один столбец с заголовком\n" +
-                                          "один или несколько столбцов со значениями заголовка";
+    private const string HGPАЗаголовкиО = "Необязательный диапазон с заголовками запроса:\n"
+                                        + "один столбец с заголовком\n"
+                                        + "один или несколько столбцов со значениями заголовка";
 
-    private const string HGPАЗаголовкиJО = "Необязательные заголовки в формате массива объектов JSON:\n" +
-                                           "[{\"Заголовок1\":[\"знач1\",\"знач2\"]},{\"Заголовок2\":\"знач3\"}]";
+    private const string HGPАЗаголовкиJО = "Необязательные заголовки в формате массива объектов JSON:\n"
+                                         + "[{\"Заголовок1\":[\"знач1\",\"знач2\"]},{\"Заголовок2\":\"знач3\"}]";
 
     private const string HPАТелоИ = "тело";
     private const string HPАТелоО = "Тело запроса в формате json (необязательно)";
 
     [ExcelAsyncFunction(Name = HGАктивИ, Category = МояКатегория, Description = HGАктивО)]
     public static async Task<object> HttpGet_active(
-        [ExcelArgument(Name = HGPААдресИ, Description = HGPААдресО)]
-        string адрес,
-        [ExcelArgument(Name = HGPАJsonPathИ, Description = HGPАJsonPathО)]
-        string? jsonPath = null,
-        [ExcelArgument(Name = HGPАЗаголовкиИ, Description = HGPАЗаголовкиО)]
-        string[,]? заголовки = null,
-        [ExcelArgument(Name = HGPАЗаголовкиJИ, Description = HGPАЗаголовкиJО)]
-        string? заголовкиJson = null,
-        CancellationToken ct = default){
+        [ExcelArgument(Name = HGPААдресИ, Description = HGPААдресО)] string адрес,
+        [ExcelArgument(Name = HGPАJsonPathИ, Description = HGPАJsonPathО)] string? jsonPath = null,
+        [ExcelArgument(Name = HGPАЗаголовкиИ, Description = HGPАЗаголовкиО)] string[,]? заголовки = null,
+        [ExcelArgument(Name = HGPАЗаголовкиJИ, Description = HGPАЗаголовкиJО)] string? заголовкиJson = null,
+        CancellationToken ct = default) {
         // Предотвращает выполнение пока запущен мастер функций
         if (ExcelDnaUtil.IsInFunctionWizard()) return "";
 
-        if (заголовки?.Length == 1)
-            заголовки = null;
+        if (заголовки?.Length == 1) заголовки = null;
 
         var ответ = await HttpКлиент.HttpКлиент.GetАсинх(адрес, заголовки, заголовкиJson, ct).ConfigureAwait(false);
 
-        if (ответ is null)
-            return ExcelError.ExcelErrorNA;
+        if (ответ is null) return ExcelError.ExcelErrorNA;
 
-        if (string.IsNullOrWhiteSpace(jsonPath) || jsonPath == "$")
-            return ответ;
+        if (string.IsNullOrWhiteSpace(jsonPath) || jsonPath == "$") return ответ;
 
         return JsonКлиент.JsonКлиент.JsonPathНайди(ответ, jsonPath);
     }
 
     [ExcelAsyncFunction(Name = HPАктивИ, Category = МояКатегория, Description = HPАктивО)]
     public static async Task<object> HttpPost_active(
-        [ExcelArgument(Name = HGPААдресИ, Description = HGPААдресО)]
-        string адрес,
-        [ExcelArgument(Name = HGPАJsonPathИ, Description = HGPАJsonPathО)]
-        string? jsonPath = null,
-        [ExcelArgument(Name = HGPАЗаголовкиИ, Description = HGPАЗаголовкиО)]
-        string[,]? заголовки = null,
-        [ExcelArgument(Name = HGPАЗаголовкиJИ, Description = HGPАЗаголовкиJО)]
-        string? заголовкиJson = null,
-        [ExcelArgument(Name = HPАТелоИ, Description = HPАТелоО)]
-        string? телоJson = null,
-        CancellationToken ct = default){
+        [ExcelArgument(Name = HGPААдресИ, Description = HGPААдресО)] string адрес,
+        [ExcelArgument(Name = HGPАJsonPathИ, Description = HGPАJsonPathО)] string? jsonPath = null,
+        [ExcelArgument(Name = HGPАЗаголовкиИ, Description = HGPАЗаголовкиО)] string[,]? заголовки = null,
+        [ExcelArgument(Name = HGPАЗаголовкиJИ, Description = HGPАЗаголовкиJО)] string? заголовкиJson = null,
+        [ExcelArgument(Name = HPАТелоИ, Description = HPАТелоО)] string? телоJson = null,
+        CancellationToken ct = default) {
         // Предотвращает выполнение пока запущен мастер функций
         if (ExcelDnaUtil.IsInFunctionWizard()) return "";
 
@@ -418,13 +390,11 @@ public static class Функции{
             заголовки = null;
 
         var ответ = await HttpКлиент.HttpКлиент.PostАсинх(адрес, заголовки, заголовкиJson, телоJson, ct)
-            .ConfigureAwait(false);
+                                    .ConfigureAwait(false);
 
-        if (ответ is null)
-            return ExcelError.ExcelErrorNA;
+        if (ответ is null) return ExcelError.ExcelErrorNA;
 
-        if (string.IsNullOrWhiteSpace(jsonPath) || jsonPath == "$")
-            return ответ;
+        if (string.IsNullOrWhiteSpace(jsonPath) || jsonPath == "$") return ответ;
 
         return JsonКлиент.JsonКлиент.JsonPathНайди(ответ, jsonPath);
     }
@@ -432,9 +402,9 @@ public static class Функции{
     private const string HGifИ = nameof(HttpGet_if);
     private const string HPifИ = nameof(HttpPost_if);
 
-    private const string HGPif_Предупреждение = "Внимание: " +
-                                                "1)Результат кешируется в самой ячейке — нельзя вкладывать в другую функцию," +
-                                                "2)кол-во символов в ячейке ограничено";
+    private const string HGPif_Предупреждение = "Внимание: "
+                                              + "1)Результат кешируется в самой ячейке — нельзя вкладывать в другую функцию,"
+                                              + "2)кол-во символов в ячейке ограничено";
 
     private const string HGifО = "Get " + HGPОобщее + HGPif_Предупреждение;
     private const string HPifО = "Post " + HGPОобщее + HGPif_Предупреждение;
@@ -442,23 +412,18 @@ public static class Функции{
     private const string HGPifПересчетО = "нужно ли повторно выполнить запрос или использовать кеш";
     private const string HGPifJmesPathИ = "JMESPath";
 
-    private const string HGPifJmesPathО = "Необязательный JMESPath позволяет выбрать нужный элемент из ответа.\n" +
-                                          "Подробнее о формате JMESPath по ссылке:\n" +
-                                          JmesPathHelpUrl;
+    private const string HGPifJmesPathО = "Необязательный JMESPath позволяет выбрать нужный элемент из ответа.\n"
+                                        + "Подробнее о формате JMESPath по ссылке:\n"
+                                        + JmesPathHelpUrl;
 
     [ExcelAsyncFunction(Name = HGifИ, Category = МояКатегория, Description = HGifО, IsMacroType = true)]
     public static async Task<string> HttpGet_if(
-        [ExcelArgument(Name = HGPifПересчетИ, Description = HGPifПересчетО)]
-        bool повторитьЛи,
-        [ExcelArgument(Name = HGPААдресИ, Description = HGPААдресО)]
-        string адрес,
-        [ExcelArgument(Name = HGPifJmesPathИ, Description = HGPifJmesPathО)]
-        string? jmesPath = null,
-        [ExcelArgument(Name = HGPАЗаголовкиИ, Description = HGPАЗаголовкиО)]
-        string[,]? заголовки = null,
-        [ExcelArgument(Name = HGPАЗаголовкиJИ, Description = HGPАЗаголовкиJО)]
-        string? заголовкиJson = null,
-        CancellationToken ct = default){
+        [ExcelArgument(Name = HGPifПересчетИ, Description = HGPifПересчетО)] bool повторитьЛи,
+        [ExcelArgument(Name = HGPААдресИ, Description = HGPААдресО)] string адрес,
+        [ExcelArgument(Name = HGPifJmesPathИ, Description = HGPifJmesPathО)] string? jmesPath = null,
+        [ExcelArgument(Name = HGPАЗаголовкиИ, Description = HGPАЗаголовкиО)] string[,]? заголовки = null,
+        [ExcelArgument(Name = HGPАЗаголовкиJИ, Description = HGPАЗаголовкиJО)] string? заголовкиJson = null,
+        CancellationToken ct = default) {
         // Предотвращает выполнение пока запущен мастер функций
         if (ExcelDnaUtil.IsInFunctionWizard()) return "";
 
@@ -467,8 +432,9 @@ public static class Функции{
             if (ответ is not { } str) return ExcelError.ExcelErrorNA.ToString();
 
             return string.IsNullOrWhiteSpace(jmesPath)
-                ? str
-                : JsonКлиент.JsonКлиент.JmesPathИзмени(str, jmesPath).ToString() ?? ExcelError.ExcelErrorNA.ToString();
+                       ? str
+                       : JsonКлиент.JsonКлиент.JmesPathИзмени(str, jmesPath).ToString()
+                      ?? ExcelError.ExcelErrorNA.ToString();
         };
 
         if (повторитьЛи || XlCall.Excel(XlCall.xlfCaller) is not ExcelReference вызванИз)
@@ -483,31 +449,26 @@ public static class Функции{
 
     [ExcelAsyncFunction(Name = HPifИ, Category = МояКатегория, Description = HPifО, IsMacroType = true)]
     public static async Task<string?> HttpPost_if(
-        [ExcelArgument(Name = HGPifПересчетИ, Description = HGPifПересчетО)]
-        bool повторитьЛи,
-        [ExcelArgument(Name = HGPААдресИ, Description = HGPААдресО)]
-        string адрес,
-        [ExcelArgument(Name = HGPifJmesPathИ, Description = HGPifJmesPathО)]
-        string? jmesPath = null,
-        [ExcelArgument(Name = HGPАЗаголовкиИ, Description = HGPАЗаголовкиО)]
-        string[,]? заголовки = null,
-        [ExcelArgument(Name = HGPАЗаголовкиJИ, Description = HGPАЗаголовкиJО)]
-        string? заголовкиJson = null,
-        [ExcelArgument(Name = HPАТелоИ, Description = HPАТелоО)]
-        string? телоJson = null,
-        CancellationToken ct = default){
+        [ExcelArgument(Name = HGPifПересчетИ, Description = HGPifПересчетО)] bool повторитьЛи,
+        [ExcelArgument(Name = HGPААдресИ, Description = HGPААдресО)] string адрес,
+        [ExcelArgument(Name = HGPifJmesPathИ, Description = HGPifJmesPathО)] string? jmesPath = null,
+        [ExcelArgument(Name = HGPАЗаголовкиИ, Description = HGPАЗаголовкиО)] string[,]? заголовки = null,
+        [ExcelArgument(Name = HGPАЗаголовкиJИ, Description = HGPАЗаголовкиJО)] string? заголовкиJson = null,
+        [ExcelArgument(Name = HPАТелоИ, Description = HPАТелоО)] string? телоJson = null,
+        CancellationToken ct = default) {
         // Предотвращает выполнение пока запущен мастер функций
         if (ExcelDnaUtil.IsInFunctionWizard()) return "";
 
         var запросиИВерниФунк = async () => {
             var ответ =
                 await HttpPost_active(адрес, null, заголовки, заголовкиJson, телоJson, ct)
-                    .ConfigureAwait(false) as string;
+                   .ConfigureAwait(false) as string;
             if (ответ is not { } str) return ExcelError.ExcelErrorNA.ToString();
 
             return string.IsNullOrWhiteSpace(jmesPath)
-                ? str
-                : JsonКлиент.JsonКлиент.JmesPathИзмени(str, jmesPath).ToString() ?? ExcelError.ExcelErrorNA.ToString();
+                       ? str
+                       : JsonКлиент.JsonКлиент.JmesPathИзмени(str, jmesPath).ToString()
+                      ?? ExcelError.ExcelErrorNA.ToString();
         };
 
         if (повторитьЛи || XlCall.Excel(XlCall.xlfCaller) is not ExcelReference вызванИз)
@@ -535,13 +496,13 @@ public static class Функции{
 
     private const string JИО = "Извлекает элементы json по индексу";
 
-    private const string JPО = "Извлекает элементы json с помощью синтаксиса JSONPath. " +
-                               "Не умеет проецировать данные (например, фильтрация с последующим индексом массива). " +
-                               "При необходимости проецировать данные используйте функцию JmesPath.\n" +
-                               "Примеры запросов в справке";
+    private const string JPО = "Извлекает элементы json с помощью синтаксиса JSONPath. "
+                             + "Не умеет проецировать данные (например, фильтрация с последующим индексом массива). "
+                             + "При необходимости проецировать данные используйте функцию JmesPath.\n"
+                             + "Примеры запросов в справке";
 
-    private const string JmPО = "Извлекает элементы json с помощью синтаксиса JMESPath.\n" +
-                                "Примеры запросов в справке";
+    private const string JmPО =
+        "Извлекает элементы json с помощью синтаксиса JMESPath.\n" + "Примеры запросов в справке";
 
     private const string JPJMАJsonТекстИ = "jsonТекст";
     private const string JPJMАJsonТекстО = "Json документ";
@@ -555,30 +516,24 @@ public static class Функции{
 
     [ExcelFunction(Name = JИИ, Category = МояКатегория, Description = JИО, IsThreadSafe = true)]
     public static object JsonИндекс(
-        [ExcelArgument(Name = JPJMАJsonТекстИ, Description = JPJMАJsonТекстО)]
-        string jsonТекст,
-        [ExcelArgument(Name = JИАИндексИ, Description = JИАИндексО)]
-        params string[] индексы){
+        [ExcelArgument(Name = JPJMАJsonТекстИ, Description = JPJMАJsonТекстО)] string jsonТекст,
+        [ExcelArgument(Name = JИАИндексИ, Description = JИАИндексО)] params string[] индексы) {
         return JsonКлиент.JsonКлиент.JsonИндекс(jsonТекст, индексы);
     }
 
     [ExcelFunction(Name = JPИ, Category = МояКатегория, Description = JPО, HelpTopic = JsonPathHelpUrl,
-        IsThreadSafe = true)]
+                   IsThreadSafe = true)]
     public static object JsonPath(
-        [ExcelArgument(Name = JPJMАJsonТекстИ, Description = JPJMАJsonТекстО)]
-        string jsonТекст,
-        [ExcelArgument(Name = JPАJsonPathИ, Description = JPАJsonPathО)]
-        string jsonPath){
+        [ExcelArgument(Name = JPJMАJsonТекстИ, Description = JPJMАJsonТекстО)] string jsonТекст,
+        [ExcelArgument(Name = JPАJsonPathИ, Description = JPАJsonPathО)] string jsonPath) {
         return JsonКлиент.JsonКлиент.JsonPathНайди(jsonТекст, jsonPath);
     }
 
     [ExcelFunction(Name = JmPИ, Category = МояКатегория, Description = JmPО, HelpTopic = JmesPathHelpUrl,
-        IsThreadSafe = true)]
+                   IsThreadSafe = true)]
     public static object JmesPath(
-        [ExcelArgument(Name = JPJMАJsonТекстИ, Description = JPJMАJsonТекстО)]
-        string jsonТекст,
-        [ExcelArgument(Name = JmPАJsonPathИ, Description = JmPАJsonPathО)]
-        string jmesPath){
+        [ExcelArgument(Name = JPJMАJsonТекстИ, Description = JPJMАJsonТекстО)] string jsonТекст,
+        [ExcelArgument(Name = JmPАJsonPathИ, Description = JmPАJsonPathО)] string jmesPath) {
         return JsonКлиент.JsonКлиент.JmesPathИзмени(jsonТекст, jmesPath);
     }
 
@@ -600,17 +555,14 @@ public static class Функции{
     private const string B64ДАbase64ТекстО = "текст закодированный в формате base64";
 
     [ExcelFunction(Name = B64КИ, Category = МояКатегория, Description = B64КО, IsThreadSafe = true)]
-    public static string Base64Кодировать(
-        [ExcelArgument(Name = B64КАТекстИ, Description = B64КАТекстО)]
-        string текст){
+    public static string Base64Кодировать([ExcelArgument(Name = B64КАТекстИ, Description = B64КАТекстО)] string текст) {
         var байты = Encoding.UTF8.GetBytes(текст);
         return Convert.ToBase64String(байты);
     }
 
     [ExcelFunction(Name = B64ДИ, Category = МояКатегория, Description = B64ДО, IsThreadSafe = true)]
     public static string Base64Декодировать(
-        [ExcelArgument(Name = B64ДАbase64ТекстИ, Description = B64ДАbase64ТекстО)]
-        string base64Текст){
+        [ExcelArgument(Name = B64ДАbase64ТекстИ, Description = B64ДАbase64ТекстО)] string base64Текст) {
         var байты = Convert.FromBase64String(base64Текст);
         return Encoding.UTF8.GetString(байты);
     }
@@ -621,9 +573,8 @@ public static class Функции{
 
     #region Функции массива
 
-    private static bool ЧисловойЛи(this object o){
-        var numericTypes = new HashSet<Type>
-        {
+    private static bool ЧисловойЛи(this object o) {
+        var numericTypes = new HashSet<Type> {
             //встроенные:
             typeof(byte),
             typeof(sbyte),
@@ -640,30 +591,26 @@ public static class Функции{
         return numericTypes.Contains(o.GetType());
     }
 
-    private class ЦифрыПередТекстомСравниватель : IComparer, IComparer<object?>{
+    private class ЦифрыПередТекстомСравниватель : IComparer, IComparer<object?> {
         // Call CaseInsensitiveComparer.Compare with the parameters reversed.
-        int IComparer.Compare(object? x, object? y){
-            return (x, y) switch
-            {
-                (null, not null) => -1,
-                (null, null) => 0,
-                (not null, null) => 1,
+        int IComparer.Compare(object? x, object? y) {
+            return (x, y) switch {
+                (null, not null)   => -1,
+                (null, null)       => 0,
+                (not null, null)   => 1,
                 (bool b1, bool b2) => b1.CompareTo(b2),
-                (bool, _) => -1,
-                (_, bool) => 1,
-                _ => (x.ЧисловойЛи(), y.ЧисловойЛи()) switch
-                {
-                    (true, true) => Convert.ToDouble(x).CompareTo(Convert.ToDouble(y)),
+                (bool, _)          => -1,
+                (_, bool)          => 1,
+                _ => (x.ЧисловойЛи(), y.ЧисловойЛи()) switch {
+                    (true, true)  => Convert.ToDouble(x).CompareTo(Convert.ToDouble(y)),
                     (true, false) => -1,
                     (false, true) => 1,
-                    _ => x.ToString()!.CompareTo(y.ToString())
+                    _             => x.ToString()!.CompareTo(y.ToString())
                 }
             };
         }
 
-        int IComparer<object>.Compare(object? x, object? y){
-            return ((IComparer)this).Compare(x, y);
-        }
+        int IComparer<object>.Compare(object? x, object? y) { return ((IComparer)this).Compare(x, y); }
     }
 
     #region Соединить списки
@@ -675,8 +622,7 @@ public static class Функции{
 
     [ExcelFunction(Name = СоедСписИ, Category = МояКатегория, Description = СоедСписО, IsThreadSafe = true)]
     public static object?[] СоединитьСписки(
-        [ExcelArgument(Name = СоедСписСИ, Description = СоедСписСО)]
-        params object?[]? списки){
+        [ExcelArgument(Name = СоедСписСИ, Description = СоедСписСО)] params object?[]? списки) {
         return FlattenUdfArgument(списки).ToArray();
     }
 
@@ -695,13 +641,11 @@ public static class Функции{
 
     [ExcelFunction(Name = СортирСписИ, Category = МояКатегория, Description = СортирСписО, IsThreadSafe = true)]
     public static object?[] Сортировать(
-        [ExcelArgument(Name = СортирСписСИ, Description = СортирСписСО)]
-        object?[]? списки,
-        [ExcelArgument(Name = СортирСписПИ, Description = СортирСписПО)]
-        bool поУбыванию = false){
+        [ExcelArgument(Name = СортирСписСИ, Description = СортирСписСО)] object?[]? списки,
+        [ExcelArgument(Name = СортирСписПИ, Description = СортирСписПО)] bool поУбыванию = false) {
         return поУбыванию
-            ? FlattenUdfArgument(списки).OrderByDescending(e => e, new ЦифрыПередТекстомСравниватель()).ToArray()
-            : FlattenUdfArgument(списки).OrderBy(e => e, new ЦифрыПередТекстомСравниватель()).ToArray();
+                   ? FlattenUdfArgument(списки).OrderByDescending(e => e, new ЦифрыПередТекстомСравниватель()).ToArray()
+                   : FlattenUdfArgument(списки).OrderBy(e => e, new ЦифрыПередТекстомСравниватель()).ToArray();
     }
 
     #endregion
@@ -715,8 +659,7 @@ public static class Функции{
 
     [ExcelFunction(Name = УникСписИ, Category = МояКатегория, Description = УникСписО, IsThreadSafe = true)]
     public static object?[] УбратьПовторы(
-        [ExcelArgument(Name = УникСписСИ, Description = УникСписСО)]
-        params object?[]? списки){
+        [ExcelArgument(Name = УникСписСИ, Description = УникСписСО)] params object?[]? списки) {
         return FlattenUdfArgument(списки).Distinct().ToArray();
     }
 
@@ -731,8 +674,7 @@ public static class Функции{
 
     [ExcelFunction(Name = ОставитьЗначИ, Category = МояКатегория, Description = ОставитьЗначО, IsThreadSafe = true)]
     public static object?[] ОставитьЗначимые(
-        [ExcelArgument(Name = ОставитьЗначСИ, Description = ОставитьЗначСО)]
-        params object?[]? списки){
+        [ExcelArgument(Name = ОставитьЗначСИ, Description = ОставитьЗначСО)] params object?[]? списки) {
         return FlattenUdfArgument(списки).Where(ЗначимЛиАргументUdf).ToArray();
     }
 
@@ -747,8 +689,7 @@ public static class Функции{
 
     [ExcelFunction(Name = ЧислоЗначИ, Category = МояКатегория, Description = ЧислоЗначО, IsThreadSafe = true)]
     public static int ЧислоЗначимых(
-        [ExcelArgument(Name = ЧислоЗначСИ, Description = ЧислоЗначСО)]
-        params object?[]? списки){
+        [ExcelArgument(Name = ЧислоЗначСИ, Description = ЧислоЗначСО)] params object?[]? списки) {
         return FlattenUdfArgument(списки).Where(ЗначимЛиАргументUdf).Count();
     }
 

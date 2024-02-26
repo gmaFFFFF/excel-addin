@@ -12,25 +12,26 @@
         <Company>gmaFFFFF</Company>
         <Product>gmaFFFFF-excel-addin</Product>
         <NeutralLanguage>ru-RU</NeutralLanguage>
+        <LangVersion>latest</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DecimalMath.DecimalEx" Version="1.0.2" />
-        <PackageReference Include="ExcelDna.AddIn" Version="1.7.0" />
-        <PackageReference Include="ExcelDna.IntelliSense" Version="1.7.0" />
-        <PackageReference Include="ExcelDna.Registration" Version="1.7.0" />
-        <PackageReference Include="JsonCons.JsonPath" Version="1.1.0" />
-        <PackageReference Include="System.DirectoryServices.AccountManagement" Version="8.0.0" />
-        <PackageReference Include="System.Reactive" Version="6.0.0" />
+        <PackageReference Include="DecimalMath.DecimalEx" Version="1.0.2"/>
+        <PackageReference Include="ExcelDna.AddIn" Version="1.7.0"/>
+        <PackageReference Include="ExcelDna.IntelliSense" Version="1.7.0"/>
+        <PackageReference Include="ExcelDna.Registration" Version="1.7.0"/>
+        <PackageReference Include="JsonCons.JsonPath" Version="1.1.0"/>
+        <PackageReference Include="System.DirectoryServices.AccountManagement" Version="8.0.0"/>
+        <PackageReference Include="System.Reactive" Version="6.0.0"/>
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="Properties\ExcelDna.Build.props" />
-        <None Include="gmafffff.excel.udf.dna" />
+        <None Include="Properties\ExcelDna.Build.props"/>
+        <None Include="gmafffff.excel.udf.dna"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\JsonCons.Net\src\JsonCons.JmesPath\JsonCons.JmesPath.csproj" />
+        <ProjectReference Include="..\..\JsonCons.Net\src\JsonCons.JmesPath\JsonCons.JmesPath.csproj"/>
     </ItemGroup>
 
 </Project>

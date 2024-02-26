@@ -12,29 +12,28 @@ public class ФИО {
         int k;
 
         var cultureInfo = Thread.CurrentThread.CurrentCulture;
-        var textInfo = cultureInfo.TextInfo;
+        var textInfo    = cultureInfo.TextInfo;
 
         // Инициалы заданы явно или пустая строка
-        if (s.Length == 0 || s.IndexOf(".") > 0)
-            return s;
+        if (s.Length == 0 || s.IndexOf(".") > 0) return s;
 
         // Нормализация входной строки
         s = s.Replace(((char)30).ToString(), "-")
-            .Replace(" -", "-")
-            .Replace("- ", "-")
-            .Replace("' ", "'")
-            .Replace(" '", "'"); // О 'Генри Александр; О' Генри Александр; Н' Гомо; Д' Тревиль
+             .Replace(" -", "-")
+             .Replace("- ", "-")
+             .Replace("' ", "'")
+             .Replace(" '", "'"); // О 'Генри Александр; О' Генри Александр; Н' Гомо; Д' Тревиль
 
         var sv = s.Split();
 
         var i = sv.Length - 1;
-        if (i < 1)
-            return s;
+        if (i < 1) return s;
 
         switch (sv[i - 1]) {
             case "оглы":
             case "кызы":
-            case "заде": {
+            case "заде":
+            {
                 // бей, бек, заде, зуль, ибн, кызы, оглы, оль, паша, уль, хан, шах, эд, эль
                 i--;
                 sО = sv[i - 1][..1].ToUpper() + ".";
@@ -45,12 +44,14 @@ public class ФИО {
             case "паша":
             case "хан":
             case "шах":
-            case "шейх": {
+            case "шейх":
+            {
                 i--;
                 break;
             }
 
-            default: {
+            default:
+            {
                 switch (sv[i][^3..]) {
                     case "вич":
                     case "вна":
@@ -59,7 +60,8 @@ public class ФИО {
                     case "ича":
                     case "ичу":
                     case "вны":
-                    case "вне": {
+                    case "вне":
+                    {
                         if (i >= 2) {
                             sО = СropWord(sv[i]);
                         }
@@ -72,7 +74,8 @@ public class ФИО {
                         break;
                     }
 
-                    default: {
+                    default:
+                    {
                         k = sv[i].IndexOf("-");
                         if (k > 0) {
                             switch (sv[i][k..]) {
@@ -81,10 +84,11 @@ public class ФИО {
                                 case "заде":
                                 case "угли":
                                 case "уулы":
-                                case "оол": {
+                                case "оол":
+                                {
                                     // Вариант насаба «-оглы» и «-заде»  типа Махмуд-оглы
-                                    sО = sv[i][..1].ToUpper() + ".";
-                                    i -= 1;
+                                    sО =  sv[i][..1].ToUpper() + ".";
+                                    i  -= 1;
                                     if (i == 0) {
                                         sИ = sО;
                                         sО = "";
@@ -98,17 +102,17 @@ public class ФИО {
                             switch (sv[i - 1]) {
                                 case "ибн":
                                 case "бен":
-                                case "бин": {
-                                    sО = sv[i][..1].ToUpper() + "."; // Усерталь Алишер бен Сулейман
-                                    i -= 2;
+                                case "бин":
+                                {
+                                    sО =  sv[i][..1].ToUpper() + "."; // Усерталь Алишер бен Сулейман
+                                    i  -= 2;
                                     break;
                                 }
                             }
                         }
                         else {
                             sИ = sv[i][..1].ToUpper();
-                            if (sv[i].Length > 1)
-                                sИ += ".";
+                            if (sv[i].Length > 1) sИ += ".";
                             i--;
                         }
 
@@ -128,7 +132,8 @@ public class ФИО {
             case "cент":
             case "ван":
             case "фон":
-            case "цу": {
+            case "цу":
+            {
                 if (i >= 2) {
                     sФ = sv[0] + " " + textInfo.ToTitleCase(sv[1]);
                     sИ = СropWord(sv[2]);
@@ -144,11 +149,11 @@ public class ФИО {
                 break;
             }
 
-            default: {
+            default:
+            {
                 if (sФ.Length == 0) {
                     sФ = textInfo.ToTitleCase(sv[0]);
-                    if (sИ.Length == 0)
-                        sИ = СropWord(sv[1]);
+                    if (sИ.Length == 0) sИ = СropWord(sv[1]);
                 }
 
                 break;
@@ -156,17 +161,15 @@ public class ФИО {
         }
 
         return слева
-            ? $"{sИ}{sО} {sФ}"
-            : $"{sФ} {sИ}{sО}";
+                   ? $"{sИ}{sО} {sФ}"
+                   : $"{sФ} {sИ}{sО}";
     }
 
     private static string СropWord(string s) {
-        if (s.Length == 1)
-            return s;
-        var ss = s[..1].ToUpper() + ".";
-        var k = s.IndexOf("-");
-        if (k > 0)
-            ss = $"{ss}-{s[k..1]}.";
+        if (s.Length == 1) return s;
+        var ss        = s[..1].ToUpper() + ".";
+        var k         = s.IndexOf("-");
+        if (k > 0) ss = $"{ss}-{s[k..1]}.";
         return ss;
     }
 }

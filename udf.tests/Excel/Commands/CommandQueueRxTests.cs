@@ -7,27 +7,24 @@ using Microsoft.Reactive.Testing;
 
 namespace udf.tests.Excel.Команды;
 
-public class ОчередьКомандRxТесты
-{
+public class ОчередьКомандRxТесты {
     private readonly Fixture fixture = new();
 
-    public ОчередьКомандRxТесты()
-    {
+    public ОчередьКомандRxТесты() {
         fixture.Customize(new AutoMoqCustomization { ConfigureMembers = true });
         fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => fixture.Behaviors.Remove(b));
+               .ForEach(b => fixture.Behaviors.Remove(b));
         fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         fixture.Inject(new IntPtr(0));
     }
 
     [Fact]
-    public void ПланировщикПередаетНаИсполнениеПоступившиеКоманды()
-    {
+    public void ПланировщикПередаетНаИсполнениеПоступившиеКоманды() {
         // Подготовка
-        var команды = fixture.CreateMany<ИзмениВидимостьРядаКоманда>();
-        var планировщик = new TestScheduler();
-        ОчередьКомандRx очередь = new(_ => { }, планировщик);
-        
+        var             команды     = fixture.CreateMany<ИзмениВидимостьРядаКоманда>();
+        var             планировщик = new TestScheduler();
+        ОчередьКомандRx очередь     = new(_ => { }, планировщик);
+
         var observerВыход = планировщик.CreateObserver<ИExcelКоманда>();
         очередь.ОчередьИсполнения.Subscribe(observerВыход);
 
@@ -38,21 +35,21 @@ public class ОчередьКомандRxТесты
         // Проверка
         using var пространствоПроверки = new AssertionScope();
         var полученыКоманды = from m in observerВыход.Messages
-            select m.Value.Value;
+                              select m.Value.Value;
         полученыКоманды.Should().BeEquivalentTo(команды, "планировщик должен вернуть то, что поставлено в очередь");
-        планировщик.Clock.Should().BeGreaterOrEqualTo(очередь._периодСбораКоманд.Ticks, "должно пройти время на сборку команд");
+        планировщик.Clock.Should()
+                   .BeGreaterOrEqualTo(очередь._периодСбораКоманд.Ticks, "должно пройти время на сборку команд");
     }
-    
+
     [Fact]
-    public void ПланировщикУмеетГруппироватьКоманды()
-    {
+    public void ПланировщикУмеетГруппироватьКоманды() {
         // Подготовка
-        var команды = fixture.CreateMany<ИзмениВидимостьРядаКоманда>();
-        var группаКоманд = ИзмениВидимостьРядаКоманда.Упаковать(команды);
-        var планировщик = new TestScheduler();
-        ОчередьКомандRx очередь = new(_ => { }, планировщик);
+        var             команды      = fixture.CreateMany<ИзмениВидимостьРядаКоманда>();
+        var             группаКоманд = ИзмениВидимостьРядаКоманда.Упаковать(команды);
+        var             планировщик  = new TestScheduler();
+        ОчередьКомандRx очередь      = new(_ => { }, планировщик);
         очередь.ДобавитьКомпоновщикКоманд(typeof(ИзмениВидимостьРядаКоманда), ИзмениВидимостьРядаКоманда.Упаковать);
-        
+
         var observerВыход = планировщик.CreateObserver<ИExcelКоманда>();
         очередь.ОчередьИсполнения.Subscribe(observerВыход);
 
@@ -63,8 +60,9 @@ public class ОчередьКомандRxТесты
         // Проверка
         using var пространствоПроверки = new AssertionScope();
         var полученыКоманды = from m in observerВыход.Messages
-            select m.Value.Value;
+                              select m.Value.Value;
         полученыКоманды.Should().BeEquivalentTo(группаКоманд, "планировщик должен вернуть сгруппированные команды");
-        планировщик.Clock.Should().BeGreaterOrEqualTo(очередь._периодСбораКоманд.Ticks, "должно пройти время на сборку команд");
+        планировщик.Clock.Should()
+                   .BeGreaterOrEqualTo(очередь._периодСбораКоманд.Ticks, "должно пройти время на сборку команд");
     }
 }

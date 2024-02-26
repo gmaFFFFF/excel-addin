@@ -7,22 +7,19 @@ using Moq;
 
 namespace udf.tests.Excel.Команды;
 
-public class ИзмениВидимостьРядаКомандаТесты
-{
+public class ИзмениВидимостьРядаКомандаТесты {
     private readonly Fixture fixture = new();
 
-    public ИзмениВидимостьРядаКомандаТесты()
-    {
+    public ИзмениВидимостьРядаКомандаТесты() {
         fixture.Customize(new AutoMoqCustomization { ConfigureMembers = true });
         fixture.Inject(new IntPtr(0));
         fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => fixture.Behaviors.Remove(b));
+               .ForEach(b => fixture.Behaviors.Remove(b));
         fixture.Behaviors.Add(new OmitOnRecursionBehavior());
     }
 
     [Fact]
-    public void МожноУпаковатьОднотипныеКоманды()
-    {
+    public void МожноУпаковатьОднотипныеКоманды() {
         // Подготовка
         var ряд = fixture.Freeze<Mock<РядСетки>>();
         ряд.Setup(стр => стр.ВидимЛи()).Returns(true);
@@ -30,11 +27,11 @@ public class ИзмениВидимостьРядаКомандаТесты
         var ряды = fixture.CreateMany<РядСетки>(10).DistinctBy(р => р.Номер);
 
         var количество = ряды.Count();
-        var ряды_дубл = ряды.Concat(ряды); // Дубликаты
+        var ряды_дубл  = ряды.Concat(ряды); // Дубликаты
 
         var авторазмер = true;
-        var показать = false;
-        var размер = 1;
+        var показать   = false;
+        var размер     = 1;
 
         var команды_вх =
             from р in ряды_дубл
