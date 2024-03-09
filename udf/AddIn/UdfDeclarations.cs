@@ -67,13 +67,16 @@ public static class Функции {
     public static object НаборСтроки([ExcelArgument(Name = НаборСтрСтрИ, Description = НаборСтрСтрО)] string text,
                                      [ExcelArgument(Name = НаборСтрЗначИ, Description = НаборСтрЗначО)]
                                      params object[] значения) {
-        var ошибки = from з in значения
+        var список = FlattenUdfArgument(значения);
+        var ошибки = from з in список
                      where з is ExcelError or ExcelMissing
                      select з;
 
         if (ошибки.Any()) return ExcelError.ExcelErrorNA;
 
-        return string.Format(text, значения);
+        var arg = from з in список
+                  select ЗначимЛиАргументUdf(з) ? з : "";
+        return string.Format(text, arg.ToArray());
     }
 
     #endregion
@@ -136,7 +139,7 @@ public static class Функции {
     public static string СократитьФио([ExcelArgument(Name = СФиоАФиоИ, Description = СФиоАФиоО)] string фио,
                                       [ExcelArgument(Name = СФиоАСлеваИ, Description = СФиоАСлеваО)]
                                       bool слева = false) {
-        return ФИО.ФИО.СократитьФио(фио, слева);
+        return ЗначимЛиАргументUdf(фио) ? ФИО.ФИО.СократитьФио(фио, слева) : фио;
     }
 
     #endregion
@@ -150,9 +153,11 @@ public static class Функции {
 
     [ExcelFunction(Name = РеверсИ, Category = МояКатегория, Description = РеверсО, IsThreadSafe = true)]
     public static string Реверс([ExcelArgument(Name = РеверсСтрИ, Description = РеверсСтрО)] string text) {
-        return string.Join("", GetTextElements(text)
-                              .Reverse()
-                              .ToArray());
+        return !ЗначимЛиАргументUdf(text)
+                   ? text
+                   : string.Join("", GetTextElements(text)
+                                    .Reverse()
+                                    .ToArray());
 
         IEnumerable<string> GetTextElements(string? text) {
             // Источник: https://stackoverflow.com/a/15111719
@@ -174,7 +179,9 @@ public static class Функции {
     [ExcelFunction(Name = Прописная1И, Category = МояКатегория, Description = Прописная1О, IsThreadSafe = true)]
     public static string ПрописнаяПервая(
         [ExcelArgument(Name = Прописная1СтрИ, Description = Прописная1СтрО)] string text) {
-        return $"{text[0].ToString().ToUpper()}{text[1..]}";
+        return ЗначимЛиАргументUdf(text)
+                   ? $"{text[0].ToString().ToUpper()}{text[1..]}"
+                   : text;
     }
 
     #endregion
@@ -206,7 +213,9 @@ public static class Функции {
 
     [ExcelFunction(Name = ФайлСущЛиИ, Category = МояКатегория, Description = ФайлСущЛиО, IsThreadSafe = true)]
     public static bool ФайлСуществуетЛи(
-        [ExcelArgument(Name = ФайлСущЛиПутьИ, Description = ФайлСущЛиПутьО)] string path) => File.Exists(path);
+        [ExcelArgument(Name = ФайлСущЛиПутьИ, Description = ФайлСущЛиПутьО)] string path) {
+        return File.Exists(path);
+    }
 
     #endregion
 
@@ -556,6 +565,8 @@ public static class Функции {
 
     [ExcelFunction(Name = B64КИ, Category = МояКатегория, Description = B64КО, IsThreadSafe = true)]
     public static string Base64Кодировать([ExcelArgument(Name = B64КАТекстИ, Description = B64КАТекстО)] string текст) {
+        if (!ЗначимЛиАргументUdf(текст))
+            return текст;
         var байты = Encoding.UTF8.GetBytes(текст);
         return Convert.ToBase64String(байты);
     }
@@ -563,6 +574,8 @@ public static class Функции {
     [ExcelFunction(Name = B64ДИ, Category = МояКатегория, Description = B64ДО, IsThreadSafe = true)]
     public static string Base64Декодировать(
         [ExcelArgument(Name = B64ДАbase64ТекстИ, Description = B64ДАbase64ТекстО)] string base64Текст) {
+        if (!ЗначимЛиАргументUdf(base64Текст))
+            return base64Текст;
         var байты = Convert.FromBase64String(base64Текст);
         return Encoding.UTF8.GetString(байты);
     }
@@ -592,7 +605,6 @@ public static class Функции {
     }
 
     private class ЦифрыПередТекстомСравниватель : IComparer, IComparer<object?> {
-        // Call CaseInsensitiveComparer.Compare with the parameters reversed.
         int IComparer.Compare(object? x, object? y) {
             return (x, y) switch {
                 (null, not null)   => -1,
